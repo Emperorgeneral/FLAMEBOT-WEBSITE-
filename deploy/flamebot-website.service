@@ -6,9 +6,9 @@ After=network.target
 Type=simple
 User=www-data
 Group=www-data
-WorkingDirectory=/var/www/flamebot-website
+WorkingDirectory=/var/www/flamebotwebsite
 EnvironmentFile=/etc/flamebot-website.env
-ExecStart=/usr/bin/node /var/www/flamebot-website/server.js
+ExecStart=/usr/bin/node /var/www/flamebotwebsite/server.js
 Restart=always
 RestartSec=5
 

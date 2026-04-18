@@ -50,8 +50,8 @@ sudo apt-get install -y nodejs nginx
 
 ```bash
 cd /var/www
-sudo git clone https://github.com/Emperorgeneral/FLAMEBOT-WEBSITE-.git flamebot-website
-cd flamebot-website
+sudo git clone https://github.com/Emperorgeneral/FLAMEBOT-WEBSITE-.git flamebotwebsite
+cd flamebotwebsite
 sudo npm install --omit=dev
 ```
 
@@ -101,7 +101,7 @@ sudo certbot --nginx -d your-domain.com -d www.your-domain.com
 ## Deploy updates later
 
 ```bash
-cd /var/www/flamebot-website
+cd /var/www/flamebotwebsite
 sudo git pull
 sudo npm install --omit=dev
 sudo systemctl restart flamebot-website
