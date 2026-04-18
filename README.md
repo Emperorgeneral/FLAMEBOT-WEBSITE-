@@ -1,116 +1,115 @@
-<<<<<<< HEAD
-# FLAMEBOT-WEBSITE-
-=======
 # FlameBot website
 
-This is a static website with:
+This repository is a small Node.js website service that serves the static marketing pages, the download page, and the admin and ambassador dashboards.
 
-- `index.html` (front page / marketing)
-- `download/index.html` (downloads + setup)
-- `admin/index.html` (private admin dashboard UI)
-- `ambassador/index.html` (private ambassador dashboard UI)
+The app does not depend on Railway. Railway was only running `node server.js` for you. Moving to a VPS means running the same process under a process manager or `systemd`, then putting Nginx in front of it.
 
-## Deploy options
+## Structure
 
-- Cloudflare Pages (drag & drop or connect a Git repo)
-- GitHub Pages
-- Railway (connect a Git repo and deploy the `website/` folder)
+- `index.html`, `about.html`, `contact.html`, `privacy.html`, `terms.html`
+- `download/index.html`
+- `admin/index.html`
+- `ambassador/index.html`
+- `server.js` for static file serving, security headers, compression, and backend proxying
 
-## Local preview
+## Runtime
 
-From the `website/` folder:
+- Node.js 18 or newer
+- Start command: `npm start`
+- Default port: `3000`
 
-- `python -m http.server 5173`
-- Open `http://localhost:5173`
+## Environment variables
 
-Note: the Windows `py` launcher may not be installed on some PCs. If `py` fails, use `python`.
+- `PORT`: local port for the Node server. Default is `3000`.
+- `FLAMEBOT_BACKEND_BASE_URL`: base URL of the backend used by the admin and ambassador dashboards.
+- `FLAMEBOT_WEBSITE_ANALYTICS_SECRET`: shared secret for website analytics forwarding.
+- `FLAMEBOT_CANONICAL_HOST`: optional canonical host such as `www.example.com`. Leave empty to disable host redirects.
+- `FLAMEBOT_FORCE_HTTPS`: optional. Set to `true` when the site is behind Nginx or another proxy that sets `X-Forwarded-Proto: https`.
 
-## Railway deploy (simple)
+## Local run
 
-This repo includes `website/package.json` so Railway can deploy the site as a small Node web service.
+```bash
+npm install
+npm start
+```
 
-1) Railway: **New Project** -> **Deploy from GitHub repo**
-2) In the service settings, set **Root Directory** to `website`
-3) Railway will run `npm install` and then `npm start`
-4) Once deployed, open the Railway-provided URL
+Open `http://localhost:3000`.
 
-### Security headers (recommended)
+## VPS deployment
 
-This site is static, but it is deployed on Railway as a Node service so we can send security headers.
+These steps assume Ubuntu and a domain already pointed to your VPS.
 
-- The HTTP headers are set by `server.js` (CSP, HSTS on HTTPS, anti-framing, etc.)
-- The `website/_headers` file is included for hosts like Cloudflare Pages/Netlify, but Railway does not apply it automatically.
+### 1. Install Node.js and Nginx
 
-## Admin dashboard
+```bash
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt-get install -y nodejs nginx
+```
 
-The website now serves a private admin UI at `/admin/` and a private ambassador UI at `/ambassador/`.
+### 2. Upload the project
 
-Website service environment:
+```bash
+cd /var/www
+sudo git clone https://github.com/Emperorgeneral/FLAMEBOT-WEBSITE-.git flamebot-website
+cd flamebot-website
+sudo npm install --omit=dev
+```
 
-- `FLAMEBOT_BACKEND_BASE_URL`: absolute base URL of the deployed Flask backend that exposes the admin APIs.
-- `FLAMEBOT_WEBSITE_ANALYTICS_SECRET`: shared secret used by the website service to send public page-visit analytics into the backend.
+### 3. Create the service env file
 
-Backend environment:
+```bash
+sudo cp deploy/flamebot-website.env.example /etc/flamebot-website.env
+sudo nano /etc/flamebot-website.env
+```
 
-- `FLAMEBOT_ADMIN_BOOTSTRAP_EMAIL`: Gmail address for the initial main admin.
-- `FLAMEBOT_ADMIN_BOOTSTRAP_PASSWORD`: password for the initial main admin.
-- `FLAMEBOT_ADMIN_SESSION_TTL_SEC` (optional): admin session lifetime in seconds.
-- `FLAMEBOT_ADMIN_PASSWORD_MIN_LENGTH` (optional): minimum password length for admin accounts.
-- `FLAMEBOT_PUBLIC_BASE_URL`: public HTTPS base URL for the deployed backend, used to generate webhook and ambassador dashboard links.
-- `FLAMEBOT_WEBSITE_ANALYTICS_SECRET`: same shared secret configured on the website service, required for protected website traffic analytics.
-- `FLAMEBOT_OWNER_TELEGRAM_ID`: numeric Telegram ID that the backend always treats as the owner profile.
-- `FLAMEBOT_PREREG_TG_BOT_USERNAME`: username of the separate preregistration Telegram bot.
-- `FLAMEBOT_PREREG_TG_BOT_TOKEN`: bot token for the preregistration bot webhook.
-- `FLAMEBOT_PREREG_TG_WEBHOOK_SECRET` (optional): Telegram webhook secret for the preregistration bot.
-- `FLAMEBOT_PREREG_TG_WEBHOOK_AUTOSET` (optional): auto-configure the preregistration bot webhook on startup.
+Set at least:
 
-Behavior:
+- `PORT=3000`
+- `FLAMEBOT_BACKEND_BASE_URL=https://your-backend-domain`
+- `FLAMEBOT_CANONICAL_HOST=your-domain.com` or `www.your-domain.com`
+- `FLAMEBOT_FORCE_HTTPS=true`
 
-- Main admin signs in at `/admin/` with the bootstrap Gmail and password.
-- Before login, the admin and ambassador routes show only the sign-in shell. Dashboard views and data load only after authentication.
-- The admin dashboard is split into post-login sections: Dashboard, Ambassadors, Users, Referral Tracking, and Analytics.
-- Only the main admin can create ambassadors.
-- Ambassadors sign in at `/ambassador/` with the Gmail and password assigned by the main admin.
-- Ambassadors see only users whose `referred_by_telegram_id` matches their Telegram identity.
-- The admin homepage stays lightweight: summary cards, growth trend, and recent users only.
-- User records now expose activity fields such as last login, last seen activity, device/platform, Telegram ID, and referrer.
-- Admin analytics include website traffic, daily traffic, recent user activity, and backend EA/session activity after the updated backend is deployed.
-- Telegram ID is the canonical user identity in the dashboard layer: one Telegram ID maps to one user profile.
-- Referral links are deterministic Telegram-based tokens in the form `TGREF-<telegram_id>`.
-- The separate preregistration bot marks users as `pre_registered` by Telegram ID as soon as they start the bot from a referral link, and stores `telegram_username` plus `phone_number` if Telegram provides them.
-- When that same Telegram user later authenticates in the app, the backend upgrades the same canonical profile to `registered` automatically.
-- Direct app registrations without an ambassador referral are assigned to the owner profile by default.
-- MT4 and MT5 are shown as child trading accounts under the same Telegram-owned profile instead of as separate top-level users.
-- `paid` can be set from the dashboard when needed.
+### 4. Install the `systemd` service
 
-## What to upload
+```bash
+sudo cp deploy/flamebot-website.service /etc/systemd/system/flamebot-website.service
+sudo systemctl daemon-reload
+sudo systemctl enable flamebot-website
+sudo systemctl start flamebot-website
+sudo systemctl status flamebot-website
+```
 
-- Build output zips:
-	- `..\\dist\\FlameBot-Windows.zip`
-	- `..\\dist\\FlameBot-macOS.zip`
+### 5. Install the Nginx site
 
-## Screenshots (optional)
+```bash
+sudo cp deploy/flamebot-website.nginx.conf /etc/nginx/sites-available/flamebot-website
+sudo nano /etc/nginx/sites-available/flamebot-website
+sudo ln -s /etc/nginx/sites-available/flamebot-website /etc/nginx/sites-enabled/flamebot-website
+sudo nginx -t
+sudo systemctl reload nginx
+```
 
-To show the in-page preview gallery, add 3 screenshots here:
+Update the `server_name` entries in the Nginx file to your real domain.
 
-- `website/assets/screenshots/screen-1.png`
-- `website/assets/screenshots/screen-2.png`
-- `website/assets/screenshots/screen-3.png`
+### 6. Add TLS with Let's Encrypt
 
-If any are missing, the gallery auto-hides those items (and hides the section if none exist).
+```bash
+sudo apt-get install -y certbot python3-certbot-nginx
+sudo certbot --nginx -d your-domain.com -d www.your-domain.com
+```
 
-Note: screenshots are shown on `/download/` (backed by `download/index.html`).
+## Deploy updates later
 
-## Recommended hosting (simple)
+```bash
+cd /var/www/flamebot-website
+sudo git pull
+sudo npm install --omit=dev
+sudo systemctl restart flamebot-website
+```
 
-1) Create a GitHub repository and push this project.
-2) On GitHub: Releases -> New release
-3) Upload `dist/FlameBot-Windows.zip` and `dist/FlameBot-macOS.zip` as release assets.
-4) Use this URL format on the website:
+## Important notes
 
-`https://github.com/Emperorgeneral/FLAMEBOT/releases/latest/download/FlameBot-Windows.zip`
-
-`https://github.com/Emperorgeneral/FLAMEBOT/releases/latest/download/FlameBot-macOS.zip`
-
-Update the Windows download link in `index.html` to point to wherever you host that zip (GitHub Release asset URL, S3/R2 public URL, etc.).
->>>>>>> e2b4a4d (chore: initial website repository import)
+- This service listens on `0.0.0.0`, so Nginx can reverse proxy to it.
+- The app already supports `PORT`, so no code change is needed for VPS hosting.
+- The old hardcoded domain redirect has been replaced with `FLAMEBOT_CANONICAL_HOST`, which is safer for VPS deployment.
+- If your backend lives on a different host, make sure `FLAMEBOT_BACKEND_BASE_URL` points to its public HTTPS URL.

@@ -69,6 +69,7 @@
       border: 1px solid var(--border);
       border-radius: calc(var(--radius) + 8px);
       background: rgba(255, 255, 255, 0.03);
+      -webkit-backdrop-filter: blur(8px);
       backdrop-filter: blur(8px);
       box-shadow: var(--shadow-soft);
     }
@@ -110,6 +111,7 @@
       border-radius: calc(var(--radius) + 8px);
       background: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.03) 100%);
       box-shadow: var(--shadow-soft);
+      -webkit-backdrop-filter: blur(8px);
       backdrop-filter: blur(8px);
     }
 
@@ -201,6 +203,7 @@
       box-shadow:
         0 26px 75px rgba(0, 0, 0, 0.58),
         0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+      -webkit-backdrop-filter: blur(10px);
       backdrop-filter: blur(10px);
     }
 
@@ -262,7 +265,33 @@
       padding: 18px;
       background: var(--panel);
       box-shadow: var(--shadow-soft);
+      -webkit-backdrop-filter: blur(8px);
       backdrop-filter: blur(8px);
+    }
+
+    .brandDot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255,122,24,0.75);
+      box-shadow: 0 0 22px rgba(255,122,24,0.55);
+    }
+
+    .heroActions {
+      margin-top: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .detectedOsLabel {
+      font-size: 13px;
+    }
+
+    .downloadHint {
+      margin-top: 8px;
     }
 
     .card::before {
@@ -318,7 +347,7 @@
   <div class="wrap">
     <div class="topNav" role="navigation" aria-label="Primary">
       <div class="topNavBrand">
-        <span style="display:inline-block;width:8px;height:8px;border-radius:999px;background:rgba(255,122,24,0.75);box-shadow:0 0 22px rgba(255,122,24,0.55);"></span>
+        <span class="brandDot" aria-hidden="true"></span>
         <span>FlameBot</span>
       </div>
       <div class="topNavLinks">
@@ -334,12 +363,12 @@
       <h1>FlameBot Downloads</h1>
       <p class="muted">FlameBot is a desktop companion that helps you set up and manage your trading automation on MetaTrader. Each bundle includes the FlameBot app plus the included MT4 + MT5 Expert Advisors (EAs).</p>
       <p class="muted">Download the desktop app bundle. The MT4 + MT5 EAs are included inside the same download.</p>
-      <div style="margin-top: 14px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+      <div class="heroActions">
         <a class="btn" id="autoDownloadBtn" href="/download/">Download for your device</a>
-        <span class="muted" id="detectedOsLabel" style="font-size: 13px;"></span>
+        <span class="muted detectedOsLabel" id="detectedOsLabel"></span>
       </div>
-      <p class="muted" style="margin-top: 8px;">Windows users: download, open the app, and install the EAs from Settings.</p>
-      <p class="muted" style="margin-top: 8px;">macOS users: download, unzip, move <code>FlameBot.app</code> to Applications, then copy the included EAs into MT4/MT5.</p>
+      <p class="muted downloadHint">Windows users: download, open the app, and install the EAs from Settings.</p>
+      <p class="muted downloadHint">macOS users: download, unzip, move <code>FlameBot.app</code> to Applications, then copy the included EAs into MT4/MT5.</p>
     </div>
 
     <div class="cards">

@@ -24,7 +24,10 @@ const BACKEND_BASE_URL = String(
 const WEBSITE_ANALYTICS_SECRET = String(process.env.FLAMEBOT_WEBSITE_ANALYTICS_SECRET || '').trim();
 const COOKIE_PREFERENCES_NAME = 'flamebot_cookie_preferences';
 
-const CANONICAL_HOST = 'www.flamebotapp.com';
+const CANONICAL_HOST = String(process.env.FLAMEBOT_CANONICAL_HOST || '').trim().toLowerCase();
+const FORCE_HTTPS = ['1', 'true', 'yes', 'on'].includes(
+  String(process.env.FLAMEBOT_FORCE_HTTPS || '').trim().toLowerCase()
+);
 
 const COMPRESSIBLE_CONTENT_TYPES = [
   'text/',
@@ -376,17 +379,16 @@ const server = http.createServer((req, res) => {
 
   setSecurityHeaders(req, res);
 
-  // Canonicalize to https://www.flamebotapp.com in production.
-  // This avoids duplicate-content URLs across:
-  // - flamebotapp.com
-  // - flamebot-production.up.railway.app
-  // and ensures consistent HTTPS.
+  // Canonical host and HTTPS redirects are optional so the same server can run
+  // on Railway, a VPS behind Nginx, or direct local preview.
   if (!isLocalHost) {
-    const needsCanonicalHost = host && host !== CANONICAL_HOST;
-    const needsHttps = forwardedProto && forwardedProto !== 'https';
+    const needsCanonicalHost = CANONICAL_HOST && host && host !== CANONICAL_HOST;
+    const needsHttps = FORCE_HTTPS && forwardedProto && forwardedProto !== 'https';
 
     if (needsCanonicalHost || needsHttps) {
-      const location = `https://${CANONICAL_HOST}${req.url || '/'}`;
+      const locationHost = CANONICAL_HOST || host;
+      const locationScheme = needsHttps || needsCanonicalHost ? 'https' : (forwardedProto || 'http');
+      const location = `${locationScheme}://${locationHost}${req.url || '/'}`;
       res.statusCode = 308;
       res.setHeader('Location', location);
       res.setHeader('Content-Type', 'text/plain; charset=utf-8');

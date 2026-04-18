@@ -24,12 +24,22 @@
       padding: 22px;
     }
     a { color: inherit; }
+
+    .redirectTitle {
+      font-weight: 800;
+      font-size: 18px;
+    }
+
+    .redirectHint {
+      margin-top: 10px;
+      opacity: 0.75;
+    }
   </style>
 </head>
 <body>
   <div>
-    <div style="font-weight: 800; font-size: 18px;">Redirecting to downloads…</div>
-    <div style="margin-top: 10px; opacity: 0.75;">If you are not redirected, open <a href="/download/">/download/</a>.</div>
+    <div class="redirectTitle">Redirecting to downloads...</div>
+    <div class="redirectHint">If you are not redirected, open <a href="/download/">/download/</a>.</div>
   </div>
 
   <script>

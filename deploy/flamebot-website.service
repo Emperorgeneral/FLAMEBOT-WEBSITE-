@@ -1,0 +1,16 @@
+[Unit]
+Description=FlameBot Website
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/flamebot-website
+EnvironmentFile=/etc/flamebot-website.env
+ExecStart=/usr/bin/node /var/www/flamebot-website/server.js
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

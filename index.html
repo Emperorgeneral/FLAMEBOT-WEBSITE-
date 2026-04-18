@@ -14,7 +14,7 @@
   <meta property="og:url" content="https://www.flamebotapp.com/" />
   <meta property="og:image" content="/assets/logo.png" />
   <meta name="twitter:card" content="summary_large_image" />
-  <link rel="preload" as="image" href="/assets/screenshots/slide-analysis.png" fetchpriority="high" />
+  <link rel="preload" as="image" href="/assets/screenshots/slide-analysis.png" />
   <link rel="icon" href="/assets/icon.ico" sizes="any" />
   <link rel="icon" type="image/png" href="/assets/icon.png" />
   <link rel="apple-touch-icon" href="/assets/icon.png" />
@@ -74,6 +74,7 @@
       border: 1px solid var(--border);
       border-radius: calc(var(--radius) + 8px);
       background: rgba(255, 255, 255, 0.03);
+      -webkit-backdrop-filter: blur(8px);
       backdrop-filter: blur(8px);
       box-shadow: var(--shadow-soft);
     }
@@ -115,6 +116,7 @@
       border-radius: calc(var(--radius) + 8px);
       background: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.03) 100%);
       box-shadow: var(--shadow-soft);
+      -webkit-backdrop-filter: blur(8px);
       backdrop-filter: blur(8px);
     }
 
@@ -370,6 +372,7 @@
       padding: 18px;
       background: var(--panel);
       box-shadow: var(--shadow-soft);
+      -webkit-backdrop-filter: blur(8px);
       backdrop-filter: blur(8px);
       min-height: 110px;
     }
@@ -429,6 +432,7 @@
       padding: 18px;
       background: var(--panel);
       box-shadow: var(--shadow-soft);
+      -webkit-backdrop-filter: blur(8px);
       backdrop-filter: blur(8px);
       min-height: 130px;
     }
@@ -488,6 +492,7 @@
       justify-content: center;
       padding: 20px;
       background: rgba(2, 4, 12, 0.84);
+      -webkit-backdrop-filter: blur(12px);
       backdrop-filter: blur(12px);
     }
 
@@ -597,6 +602,7 @@
       padding: 20px;
       background: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.03) 100%);
       box-shadow: var(--shadow-soft);
+      -webkit-backdrop-filter: blur(8px);
       backdrop-filter: blur(8px);
     }
 
@@ -620,12 +626,41 @@
       align-items: center;
     }
 
+    .downloadHeading {
+      margin: 12px 0 8px;
+      font-size: 24px;
+      letter-spacing: -0.01em;
+    }
+
+    .downloadSubtext {
+      margin: 0;
+    }
+
     .footer {
       margin-top: 22px;
       padding-top: 14px;
       border-top: 1px solid var(--border-2);
       font-size: 13px;
       color: var(--muted);
+    }
+
+    .footerMeta {
+      margin-top: 10px;
+    }
+
+    .footerLinksRow {
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .footerLinksRow a {
+      color: inherit;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(255,255,255,0.16);
+      padding-bottom: 1px;
     }
 
     @media (max-width: 980px) {
@@ -665,7 +700,7 @@
   <div class="wrap">
     <div class="topNav" role="navigation" aria-label="Primary">
       <div class="topNavBrand">
-        <span style="display:inline-block;width:8px;height:8px;border-radius:999px;background:rgba(255,122,24,0.75);box-shadow:0 0 22px rgba(255,122,24,0.55);"></span>
+        <span class="kickerDot" aria-hidden="true"></span>
         <span>FlameBot</span>
       </div>
       <div class="topNavLinks">
@@ -690,15 +725,15 @@
         <section class="storySlider" id="ai-slider" aria-label="FlameBot AI highlights">
           <div class="storyTrack">
             <article class="storySlide is-active" aria-hidden="false">
-              <img src="/assets/screenshots/slide-analysis.png" alt="Robot analyzing market charts and signals" loading="eager" fetchpriority="high" decoding="async" width="1600" height="900" />
+              <img src="/assets/screenshots/slide-analysis.png" alt="Robot analyzing market charts and signals" loading="eager" decoding="async" width="1600" height="900" />
               <h2 class="storyCaption">Stay Calm, Stay in Control&mdash;While AI Handles the Trades, You Relax and Watch Your Future Grow.</h2>
             </article>
             <article class="storySlide" aria-hidden="true">
-              <img src="/assets/screenshots/slide-copied-trades.png" alt="AI mirrored trading signals on desktop monitors" loading="lazy" fetchpriority="low" decoding="async" width="1600" height="900" />
+              <img src="/assets/screenshots/slide-copied-trades.png" alt="AI mirrored trading signals on desktop monitors" loading="lazy" decoding="async" width="1600" height="900" />
               <h2 class="storyCaption">Access Elite Trade Signals&mdash;Each Winning Move Instantly Copied, So You Stay Ahead of the Market.</h2>
             </article>
             <article class="storySlide" aria-hidden="true">
-              <img src="/assets/screenshots/slide-relax.png" alt="User relaxed while AI trading assistant works in the background" loading="lazy" fetchpriority="low" decoding="async" width="1600" height="900" />
+              <img src="/assets/screenshots/slide-relax.png" alt="User relaxed while AI trading assistant works in the background" loading="lazy" decoding="async" width="1600" height="900" />
               <h2 class="storyCaption">Stop Wasting Time&mdash;Let AI Unleash Your Full Trading Potential, Analyzing Every Move So You Don&rsquo;t Have To.</h2>
             </article>
           </div>
@@ -804,8 +839,8 @@
         <div class="downloadGrid">
           <div>
             <div class="kicker"><span class="kickerDot" aria-hidden="true"></span>Download</div>
-            <h2 style="margin: 12px 0 8px; font-size: 24px; letter-spacing: -0.01em;">Get FlameBot</h2>
-            <p class="muted" style="margin: 0;">Choose Windows or macOS bundle. MT4/MT5 EAs are included inside the same download.</p>
+            <h2 class="downloadHeading">Get FlameBot</h2>
+            <p class="muted downloadSubtext">Choose Windows or macOS bundle. MT4/MT5 EAs are included inside the same download.</p>
           </div>
           <a class="btn" href="/download/">Go to download page</a>
         </div>
@@ -814,12 +849,12 @@
 
     <div class="footer">
       <div>By downloading, you agree to use the software responsibly and in accordance with your broker/platform rules.</div>
-      <div style="margin-top: 10px;">© <span id="year"></span> FLAME CORE TECHNOLOGIES LTD. FlameBot. All rights reserved.</div>
-      <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
-        <a href="/about.html" style="color: inherit; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.16); padding-bottom: 1px;">About</a>
-        <a href="/contact.html" style="color: inherit; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.16); padding-bottom: 1px;">Contact</a>
-        <a href="/terms.html" style="color: inherit; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.16); padding-bottom: 1px;">Terms</a>
-        <a href="/privacy.html" style="color: inherit; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.16); padding-bottom: 1px;">Privacy</a>
+      <div class="footerMeta">© <span id="year"></span> FLAME CORE TECHNOLOGIES LTD. FlameBot. All rights reserved.</div>
+      <div class="footerLinksRow">
+        <a href="/about.html">About</a>
+        <a href="/contact.html">Contact</a>
+        <a href="/terms.html">Terms</a>
+        <a href="/privacy.html">Privacy</a>
         <button type="button" class="cookieSettingsButton" id="cookie-settings-button">Cookie settings</button>
       </div>
     </div>
