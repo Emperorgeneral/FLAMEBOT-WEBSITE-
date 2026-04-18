@@ -1,0 +1,1038 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; form-action 'self' mailto:; upgrade-insecure-requests" />
+  <meta name="referrer" content="no-referrer" />
+  <title>FlameBot</title>
+  <meta name="description" content="FlameBot: Premium desktop companion that connects Telegram signal channels to MetaTrader automation (MT4/MT5 EAs included)." />
+  <link rel="canonical" href="https://www.flamebotapp.com/" />
+  <meta property="og:title" content="FlameBot" />
+  <meta property="og:description" content="Connect Telegram signal channels to MetaTrader automation. MT4/MT5 EAs included in the download." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://www.flamebotapp.com/" />
+  <meta property="og:image" content="/assets/logo.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="preload" as="image" href="/assets/screenshots/slide-analysis.png" fetchpriority="high" />
+  <link rel="icon" href="/assets/icon.ico" sizes="any" />
+  <link rel="icon" type="image/png" href="/assets/icon.png" />
+  <link rel="apple-touch-icon" href="/assets/icon.png" />
+  <style>
+    :root {
+      color-scheme: dark;
+
+      /* Premium dark + tech glow */
+      --bg: #060814;
+      --bg-2: #070a1a;
+      --text: #f3f4f6;
+      --muted: rgba(243, 244, 246, 0.72);
+      --border: rgba(255, 255, 255, 0.10);
+      --border-2: rgba(255, 255, 255, 0.08);
+      --panel: rgba(255, 255, 255, 0.04);
+
+      /* Use system accent when available; fall back to a neon-violet. */
+      --accent: AccentColor;
+      --accent-fallback: #7c3aed;
+      --accent-2: #22d3ee;
+
+      --shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.45);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(900px 520px at 16% -8%, rgba(124, 58, 237, 0.35) 0%, rgba(124, 58, 237, 0) 60%),
+        radial-gradient(980px 540px at 90% 2%, rgba(34, 211, 238, 0.20) 0%, rgba(34, 211, 238, 0) 60%),
+        radial-gradient(880px 520px at 70% 110%, rgba(124, 58, 237, 0.18) 0%, rgba(124, 58, 237, 0) 55%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+    }
+
+    body.consent-open {
+      overflow: hidden;
+    }
+
+    .wrap {
+      max-width: 1060px;
+      margin: 0 auto;
+      padding: 52px 18px 46px;
+    }
+
+    .topNav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: calc(var(--radius) + 8px);
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(8px);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .topNav a {
+      color: rgba(243, 244, 246, 0.88);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+      padding-bottom: 1px;
+      font-size: 13px;
+    }
+
+    .topNav a[aria-current="page"] {
+      color: rgba(243, 244, 246, 1);
+      border-bottom-color: rgba(255, 255, 255, 0.28);
+      font-weight: 800;
+    }
+
+    .topNavBrand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 850;
+      letter-spacing: -0.01em;
+    }
+
+    .topNavLinks {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 26px 22px;
+      border: 1px solid var(--border);
+      border-radius: calc(var(--radius) + 8px);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.03) 100%);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(8px);
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      background:
+        radial-gradient(700px 240px at 18% 0%, rgba(124, 58, 237, 0.35) 0%, rgba(124, 58, 237, 0) 65%),
+        radial-gradient(640px 240px at 88% 0%, rgba(34, 211, 238, 0.20) 0%, rgba(34, 211, 238, 0) 70%);
+      pointer-events: none;
+      opacity: 0.85;
+    }
+
+    .hero > * { position: relative; }
+
+    .heroGrid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      font-weight: 750;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(243, 244, 246, 0.76);
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.03);
+      width: fit-content;
+    }
+
+    .kickerDot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255, 122, 24, 0.75);
+      box-shadow: 0 0 22px rgba(255, 122, 24, 0.55);
+      flex: 0 0 auto;
+    }
+
+    h1 {
+      font-size: 46px;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin: 12px 0 10px;
+    }
+
+    .titleAccent {
+      background: linear-gradient(90deg, rgba(124, 58, 237, 1) 0%, rgba(34, 211, 238, 1) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    p { line-height: 1.55; margin: 10px 0; }
+
+    .muted {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .lead {
+      font-size: 15px;
+      color: rgba(243, 244, 246, 0.76);
+      max-width: 62ch;
+    }
+
+    .scrollHint {
+      margin-top: 14px;
+      font-size: 12px;
+      color: rgba(243, 244, 246, 0.60);
+    }
+
+    .scrollHint a {
+      color: rgba(243, 244, 246, 0.82);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+      padding-bottom: 1px;
+    }
+
+    .graphic {
+      position: relative;
+      border-radius: calc(var(--radius) + 10px);
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.03);
+      overflow: hidden;
+      height: 280px;
+      box-shadow: 0 22px 60px rgba(0, 0, 0, 0.55);
+    }
+
+    .graphic::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      background:
+        radial-gradient(560px 260px at 20% 20%, rgba(255, 122, 24, 0.16), transparent 55%),
+        radial-gradient(520px 240px at 80% 30%, rgba(34, 211, 238, 0.14), transparent 58%),
+        radial-gradient(520px 240px at 50% 105%, rgba(124, 58, 237, 0.16), transparent 60%);
+      opacity: 0.95;
+      pointer-events: none;
+    }
+
+    .graphic img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      padding: 0;
+      opacity: 0.98;
+    }
+
+    .section {
+      margin-top: 18px;
+    }
+
+    .storySlider {
+      margin-top: 18px;
+      position: relative;
+      border: 1px solid var(--border);
+      border-radius: calc(var(--radius) + 8px);
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.03);
+      box-shadow: var(--shadow-soft);
+      min-height: 360px;
+    }
+
+    .hero .storySlider {
+      margin-top: 0;
+      min-height: 360px;
+      height: 360px;
+      width: 100%;
+    }
+
+    .storyTrack {
+      position: relative;
+      min-height: 360px;
+    }
+
+    .hero .storyTrack {
+      min-height: 360px;
+      height: 360px;
+    }
+
+    .storySlide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transform: scale(1.02);
+      transition: opacity 900ms ease, transform 900ms ease;
+      pointer-events: none;
+    }
+
+    .storySlide.is-active {
+      opacity: 1;
+      transform: scale(1);
+      pointer-events: auto;
+      z-index: 1;
+    }
+
+    .storySlide::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(106deg, rgba(4, 8, 22, 0.78) 0%, rgba(4, 8, 22, 0.52) 44%, rgba(4, 8, 22, 0.20) 100%),
+        linear-gradient(180deg, rgba(0, 0, 0, 0.08) 0%, rgba(0, 0, 0, 0.46) 100%);
+      z-index: 1;
+    }
+
+    .storySlide img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .storyCaption {
+      position: absolute;
+      z-index: 2;
+      left: 26px;
+      right: 26px;
+      bottom: 24px;
+      max-width: 760px;
+      font-size: clamp(22px, 3.2vw, 38px);
+      line-height: 1.2;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      text-shadow: 0 6px 28px rgba(0, 0, 0, 0.6);
+      margin: 0;
+    }
+
+    .storyDots {
+      position: absolute;
+      z-index: 3;
+      left: 26px;
+      bottom: 16px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .storyDot {
+      width: 30px;
+      height: 4px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.30);
+      transition: background 260ms ease, transform 260ms ease;
+    }
+
+    .storyDot.is-active {
+      background: rgba(255, 255, 255, 0.95);
+      transform: scaleX(1.08);
+    }
+
+    .sectionHead {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 0 0 12px;
+    }
+
+    .sectionHead h2 {
+      margin: 0;
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(243, 244, 246, 0.70);
+    }
+
+    .cards {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin-top: 16px;
+    }
+
+    .card {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      background: var(--panel);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(8px);
+      min-height: 110px;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      background:
+        radial-gradient(480px 190px at 16% 0%, rgba(124, 58, 237, 0.20) 0%, rgba(124, 58, 237, 0) 62%),
+        radial-gradient(460px 190px at 88% 0%, rgba(34, 211, 238, 0.12) 0%, rgba(34, 211, 238, 0) 70%);
+      opacity: 0.55;
+      pointer-events: none;
+    }
+
+    .card > * { position: relative; }
+
+    .card h3 { margin: 0 0 8px; font-size: 16px; letter-spacing: -0.01em; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 18px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.04) 100%);
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 750;
+      letter-spacing: -0.01em;
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45);
+      width: fit-content;
+    }
+
+    .btn:focus {
+      outline: 3px solid rgba(124, 58, 237, 0.35);
+      outline-offset: 2px;
+    }
+
+    .btnGhost {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .guideGrid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 16px;
+    }
+
+    .stepCard {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      background: var(--panel);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(8px);
+      min-height: 130px;
+    }
+
+    .stepCard::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      background:
+        radial-gradient(420px 180px at 16% 0%, rgba(255, 122, 24, 0.16) 0%, rgba(255, 122, 24, 0) 62%),
+        radial-gradient(400px 180px at 88% 0%, rgba(34, 211, 238, 0.12) 0%, rgba(34, 211, 238, 0) 70%);
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .stepCard > * { position: relative; }
+
+    .stepNumber {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 10px;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .faqList {
+      display: grid;
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .faqItem {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      background: var(--panel);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .faqItem h3 {
+      margin: 0 0 8px;
+      font-size: 16px;
+    }
+
+    .cookieOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(2, 4, 12, 0.84);
+      backdrop-filter: blur(12px);
+    }
+
+    .cookieOverlay.is-visible {
+      display: flex;
+    }
+
+    .cookiePanel {
+      width: min(100%, 680px);
+      border: 1px solid var(--border);
+      border-radius: calc(var(--radius) + 10px);
+      padding: 24px;
+      background: linear-gradient(180deg, rgba(14, 18, 35, 0.96) 0%, rgba(8, 11, 24, 0.98) 100%);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+    }
+
+    .cookiePanel h2 {
+      margin: 0 0 10px;
+      font-size: 28px;
+      letter-spacing: -0.02em;
+    }
+
+    .cookiePanel p {
+      color: rgba(243, 244, 246, 0.76);
+    }
+
+    .cookieOptions {
+      display: grid;
+      gap: 12px;
+      margin: 18px 0 20px;
+    }
+
+    .cookieOption {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .cookieOption h3 {
+      margin: 0 0 6px;
+      font-size: 15px;
+    }
+
+    .cookieOption p {
+      margin: 0;
+      font-size: 13px;
+    }
+
+    .cookieToggle {
+      width: 52px;
+      height: 30px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.08);
+      position: relative;
+      flex: 0 0 auto;
+      transition: background 180ms ease;
+    }
+
+    .cookieToggle::after {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      background: #ffffff;
+      transition: transform 180ms ease;
+    }
+
+    .cookieToggle.is-on {
+      background: rgba(34, 211, 238, 0.45);
+    }
+
+    .cookieToggle.is-on::after {
+      transform: translateX(22px);
+    }
+
+    .cookieActions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .cookieSettingsButton {
+      appearance: none;
+      border: 0;
+      background: none;
+      color: inherit;
+      font: inherit;
+      padding: 0;
+      cursor: pointer;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+    }
+
+    .downloadCard {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: calc(var(--radius) + 8px);
+      padding: 20px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.03) 100%);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(8px);
+    }
+
+    .downloadCard::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      background:
+        radial-gradient(760px 240px at 20% 0%, rgba(124, 58, 237, 0.26) 0%, transparent 65%),
+        radial-gradient(700px 240px at 84% 0%, rgba(34, 211, 238, 0.16) 0%, transparent 70%);
+      pointer-events: none;
+      opacity: 0.85;
+    }
+
+    .downloadCard > * { position: relative; }
+
+    .downloadGrid {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .footer {
+      margin-top: 22px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border-2);
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 980px) {
+      .cards { grid-template-columns: 1fr; }
+      .guideGrid { grid-template-columns: 1fr; }
+      .downloadGrid { grid-template-columns: 1fr; }
+      .graphic { height: 240px; }
+      .storySlider,
+      .storyTrack { min-height: 320px; }
+      .storyCaption {
+        left: 18px;
+        right: 18px;
+        bottom: 20px;
+      }
+      .storyDots { left: 18px; }
+      .hero .storySlider,
+      .hero .storyTrack { min-height: 320px; height: 320px; }
+    }
+
+    @media (max-width: 520px) {
+      .wrap { padding: 38px 14px 30px; }
+      .hero { padding: 18px 14px; }
+      h1 { font-size: 36px; }
+      .cookiePanel { padding: 20px 16px; }
+      .storySlider,
+      .storyTrack { min-height: 280px; }
+      .storyCaption {
+        font-size: clamp(19px, 6vw, 28px);
+        line-height: 1.26;
+      }
+      .hero .storySlider,
+      .hero .storyTrack { min-height: 280px; height: 280px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topNav" role="navigation" aria-label="Primary">
+      <div class="topNavBrand">
+        <span style="display:inline-block;width:8px;height:8px;border-radius:999px;background:rgba(255,122,24,0.75);box-shadow:0 0 22px rgba(255,122,24,0.55);"></span>
+        <span>FlameBot</span>
+      </div>
+      <div class="topNavLinks">
+        <a href="/" aria-current="page">Home</a>
+        <a href="/download/">Downloads</a>
+        <a href="/about.html">About</a>
+        <a href="/contact.html">Contact</a>
+        <a href="/terms.html">Terms</a>
+        <a href="/privacy.html">Privacy</a>
+      </div>
+    </div>
+    <div class="hero">
+      <div class="heroGrid">
+        <div>
+          <div class="kicker"><span class="kickerDot" aria-hidden="true"></span>Premium Desktop Signal Copier</div>
+          <h1><span class="titleAccent">FlameBot</span></h1>
+          <p class="lead">FlameBot is a desktop companion that helps you connect Telegram signal channels to MetaTrader automation. It guides setup, keeps everything organized, and ships with the included MT4 + MT5 Expert Advisors (EAs) inside the same bundle.</p>
+          <p class="muted">Built for clean setup, fast workflow, and a professional trading experience.</p>
+          <div class="scrollHint">Scroll down for the download button or <a href="#download">jump to download</a>.</div>
+        </div>
+
+        <section class="storySlider" id="ai-slider" aria-label="FlameBot AI highlights">
+          <div class="storyTrack">
+            <article class="storySlide is-active" aria-hidden="false">
+              <img src="/assets/screenshots/slide-analysis.png" alt="Robot analyzing market charts and signals" loading="eager" fetchpriority="high" decoding="async" width="1600" height="900" />
+              <h2 class="storyCaption">Stay Calm, Stay in Control&mdash;While AI Handles the Trades, You Relax and Watch Your Future Grow.</h2>
+            </article>
+            <article class="storySlide" aria-hidden="true">
+              <img src="/assets/screenshots/slide-copied-trades.png" alt="AI mirrored trading signals on desktop monitors" loading="lazy" fetchpriority="low" decoding="async" width="1600" height="900" />
+              <h2 class="storyCaption">Access Elite Trade Signals&mdash;Each Winning Move Instantly Copied, So You Stay Ahead of the Market.</h2>
+            </article>
+            <article class="storySlide" aria-hidden="true">
+              <img src="/assets/screenshots/slide-relax.png" alt="User relaxed while AI trading assistant works in the background" loading="lazy" fetchpriority="low" decoding="async" width="1600" height="900" />
+              <h2 class="storyCaption">Stop Wasting Time&mdash;Let AI Unleash Your Full Trading Potential, Analyzing Every Move So You Don&rsquo;t Have To.</h2>
+            </article>
+          </div>
+          <div class="storyDots" aria-hidden="true">
+            <span class="storyDot is-active"></span>
+            <span class="storyDot"></span>
+            <span class="storyDot"></span>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <div class="section" aria-label="How automation works">
+      <div class="sectionHead">
+        <h2>How It Works (Technical)</h2>
+      </div>
+      <div class="cards">
+        <div class="card">
+          <h3>Signal source</h3>
+          <p class="muted">Signals are typically produced by third-party providers and posted in Telegram. FlameBot does not “invent” trades — it automates execution of the messages you choose to follow.</p>
+        </div>
+        <div class="card">
+          <h3>Automation pipeline</h3>
+          <p class="muted">Telegram message → desktop ingestion → server queue/state → MetaTrader EA poll → order placement + trade-state reporting.</p>
+        </div>
+        <div class="card">
+          <h3>Failure behavior</h3>
+          <p class="muted">Automation is best-effort: network latency, Telegram outages, broker execution rules, and MetaTrader configuration can affect fill quality and timing.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" aria-label="Platforms supported">
+      <div class="sectionHead">
+        <h2>Platforms Supported</h2>
+      </div>
+      <div class="cards">
+        <div class="card">
+          <h3>Telegram</h3>
+          <p class="muted">Follows your selected groups/channels and processes new signal messages for automation.</p>
+        </div>
+        <div class="card">
+          <h3>MetaTrader 4</h3>
+          <p class="muted">MT4 EA execution. MT4 may require WebRequest URL whitelisting in terminal settings.</p>
+        </div>
+        <div class="card">
+          <h3>MetaTrader 5</h3>
+          <p class="muted">MT5 EA execution. Works with brokers/prop firms that support MT5 and allow automated trading.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" aria-label="Quick start guide">
+      <div class="sectionHead">
+        <h2>Quick Start Guide</h2>
+      </div>
+      <div class="guideGrid">
+        <div class="stepCard">
+          <div class="stepNumber">01</div>
+          <h3>Open FlameBot and sign into Telegram</h3>
+          <p class="muted">Start with your phone number, wait for the Telegram login code, and enter it inside the desktop app. If your Telegram account uses two-step verification, the app will prompt for your 2FA password next.</p>
+        </div>
+        <div class="stepCard">
+          <div class="stepNumber">02</div>
+          <h3>Finish account verification</h3>
+          <p class="muted">After Telegram login succeeds, FlameBot verifies your account with the server, assigns your FlameBot profile, and pulls the settings needed for your active platform.</p>
+        </div>
+        <div class="stepCard">
+          <div class="stepNumber">03</div>
+          <h3>Connect your MetaTrader terminal</h3>
+          <p class="muted">Install the included EA in MT4 or MT5, allow automated trading, and make sure any required WebRequest URL is whitelisted in the terminal settings before expecting live execution.</p>
+        </div>
+        <div class="stepCard">
+          <div class="stepNumber">04</div>
+          <h3>Select the groups you want to follow</h3>
+          <p class="muted">Once the Telegram session is active, FlameBot loads your available groups and channels so you can choose the sources you want the app to listen to for incoming signal messages.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" aria-label="Frequently asked questions">
+      <div class="sectionHead">
+        <h2>FAQ</h2>
+      </div>
+      <div class="faqList">
+        <div class="faqItem">
+          <h3>Do I need a referral link on the website?</h3>
+          <p class="muted">No. The website stays focused on product information, downloads, and setup guidance.</p>
+        </div>
+        <div class="faqItem">
+          <h3>What happens if Telegram asks for extra security?</h3>
+          <p class="muted">If Telegram asks for extra verification, that is a normal Telegram security step. FlameBot does not collect or store Telegram passwords, and we have no access to your Telegram credentials.</p>
+        </div>
+        <div class="faqItem">
+          <h3>Why is my EA not placing trades yet?</h3>
+          <p class="muted">Check automated trading permissions, terminal WebRequest settings, broker rules, and whether the desktop app has fully finished its first-time verification and configuration sync.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" id="download" aria-label="Download">
+      <div class="downloadCard">
+        <div class="downloadGrid">
+          <div>
+            <div class="kicker"><span class="kickerDot" aria-hidden="true"></span>Download</div>
+            <h2 style="margin: 12px 0 8px; font-size: 24px; letter-spacing: -0.01em;">Get FlameBot</h2>
+            <p class="muted" style="margin: 0;">Choose Windows or macOS bundle. MT4/MT5 EAs are included inside the same download.</p>
+          </div>
+          <a class="btn" href="/download/">Go to download page</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div>By downloading, you agree to use the software responsibly and in accordance with your broker/platform rules.</div>
+      <div style="margin-top: 10px;">© <span id="year"></span> FLAME CORE TECHNOLOGIES LTD. FlameBot. All rights reserved.</div>
+      <div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+        <a href="/about.html" style="color: inherit; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.16); padding-bottom: 1px;">About</a>
+        <a href="/contact.html" style="color: inherit; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.16); padding-bottom: 1px;">Contact</a>
+        <a href="/terms.html" style="color: inherit; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.16); padding-bottom: 1px;">Terms</a>
+        <a href="/privacy.html" style="color: inherit; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.16); padding-bottom: 1px;">Privacy</a>
+        <button type="button" class="cookieSettingsButton" id="cookie-settings-button">Cookie settings</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="cookieOverlay" id="cookie-overlay" role="dialog" aria-modal="true" aria-labelledby="cookie-title">
+    <div class="cookiePanel">
+      <h2 id="cookie-title">Cookie consent</h2>
+      <p>Choose whether FlameBot can use analytics cookies on this site. Essential cookies stay on because they store your consent preferences and keep basic site behavior working.</p>
+      <div class="cookieOptions">
+        <div class="cookieOption">
+          <div>
+            <h3>Essential cookies</h3>
+            <p>Required for security, consent storage, and core website behavior.</p>
+          </div>
+          <div class="cookieToggle is-on" aria-hidden="true"></div>
+        </div>
+        <div class="cookieOption">
+          <div>
+            <h3>Analytics cookies</h3>
+            <p>Allow anonymous page-view measurement so we can understand which public pages are being used.</p>
+          </div>
+          <button type="button" class="cookieToggle" id="analytics-toggle" role="switch" aria-checked="false" aria-label="Enable analytics cookies"></button>
+        </div>
+      </div>
+      <div class="cookieActions">
+        <button type="button" class="btn" id="accept-cookies">Accept analytics</button>
+        <button type="button" class="btn btnGhost" id="save-cookie-preferences">Save preferences</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const COOKIE_NAME = 'flamebot_cookie_preferences';
+      const COOKIE_MAX_AGE = 60 * 60 * 24 * 180;
+
+      const readCookiePreferences = function () {
+        const cookies = String(document.cookie || '').split(';');
+        for (let i = 0; i < cookies.length; i += 1) {
+          const entry = String(cookies[i] || '').trim();
+          if (!entry || !entry.startsWith(COOKIE_NAME + '=')) {
+            continue;
+          }
+          const rawValue = entry.slice(COOKIE_NAME.length + 1);
+          try {
+            const params = new URLSearchParams(decodeURIComponent(rawValue));
+            return {
+              analytics: ['1', 'true', 'yes'].includes(String(params.get('analytics') || '').toLowerCase())
+            };
+          } catch (_error) {
+            return null;
+          }
+        }
+        return null;
+      };
+
+      const writeCookiePreferences = function (preferences) {
+        const params = new URLSearchParams();
+        params.set('essential', '1');
+        params.set('analytics', preferences.analytics ? '1' : '0');
+        let cookieValue = COOKIE_NAME + '=' + encodeURIComponent(params.toString()) + '; Path=/; Max-Age=' + String(COOKIE_MAX_AGE) + '; SameSite=Lax';
+        if (window.location.protocol === 'https:') {
+          cookieValue += '; Secure';
+        }
+        document.cookie = cookieValue;
+      };
+
+      const overlay = document.getElementById('cookie-overlay');
+      const analyticsToggle = document.getElementById('analytics-toggle');
+      const acceptCookiesButton = document.getElementById('accept-cookies');
+      const savePreferencesButton = document.getElementById('save-cookie-preferences');
+      const openSettingsButton = document.getElementById('cookie-settings-button');
+      let analyticsEnabled = false;
+
+      const syncAnalyticsToggle = function () {
+        if (!analyticsToggle) {
+          return;
+        }
+        analyticsToggle.classList.toggle('is-on', analyticsEnabled);
+        analyticsToggle.setAttribute('aria-checked', analyticsEnabled ? 'true' : 'false');
+      };
+
+      const openConsent = function () {
+        if (!overlay) {
+          return;
+        }
+        overlay.classList.add('is-visible');
+        document.body.classList.add('consent-open');
+        syncAnalyticsToggle();
+      };
+
+      const closeConsent = function () {
+        if (!overlay) {
+          return;
+        }
+        overlay.classList.remove('is-visible');
+        document.body.classList.remove('consent-open');
+      };
+
+      const persistConsent = function () {
+        writeCookiePreferences({ analytics: analyticsEnabled });
+        closeConsent();
+        window.location.reload();
+      };
+
+      const el = document.getElementById('year');
+      if (el) el.textContent = String(new Date().getFullYear());
+
+      const savedPreferences = readCookiePreferences();
+      if (savedPreferences) {
+        analyticsEnabled = !!savedPreferences.analytics;
+        syncAnalyticsToggle();
+      } else {
+        openConsent();
+      }
+
+      if (analyticsToggle) {
+        analyticsToggle.addEventListener('click', function () {
+          analyticsEnabled = !analyticsEnabled;
+          syncAnalyticsToggle();
+        });
+      }
+
+      if (acceptCookiesButton) {
+        acceptCookiesButton.addEventListener('click', function () {
+          analyticsEnabled = true;
+          syncAnalyticsToggle();
+          persistConsent();
+        });
+      }
+
+      if (savePreferencesButton) {
+        savePreferencesButton.addEventListener('click', function () {
+          persistConsent();
+        });
+      }
+
+      if (openSettingsButton) {
+        openSettingsButton.addEventListener('click', function () {
+          const currentPreferences = readCookiePreferences();
+          if (currentPreferences) {
+            analyticsEnabled = !!currentPreferences.analytics;
+            syncAnalyticsToggle();
+          }
+          openConsent();
+        });
+      }
+
+      const slider = document.getElementById('ai-slider');
+      if (!slider) return;
+
+      const slides = Array.from(slider.querySelectorAll('.storySlide'));
+      const dots = Array.from(slider.querySelectorAll('.storyDot'));
+      if (slides.length < 2) return;
+
+      const intervalMs = 5000;
+      let activeIndex = 0;
+      let timerId = null;
+
+      const showSlide = function (index) {
+        slides.forEach(function (slide, i) {
+          const isActive = i === index;
+          slide.classList.toggle('is-active', isActive);
+          slide.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+          if (dots[i]) dots[i].classList.toggle('is-active', isActive);
+        });
+      };
+
+      const advance = function () {
+        activeIndex = (activeIndex + 1) % slides.length;
+        showSlide(activeIndex);
+      };
+
+      const stopAutoplay = function () {
+        if (timerId) {
+          window.clearInterval(timerId);
+          timerId = null;
+        }
+      };
+
+      const startAutoplay = function () {
+        if (timerId) return;
+        timerId = window.setInterval(advance, intervalMs);
+      };
+
+      showSlide(activeIndex);
+
+      if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.target !== slider) return;
+            if (entry.isIntersecting) {
+              startAutoplay();
+            } else {
+              stopAutoplay();
+            }
+          });
+        }, { threshold: [0, 0.01, 1] });
+
+        observer.observe(slider);
+      } else {
+        startAutoplay();
+      }
+
+      document.addEventListener('visibilitychange', function () {
+        if (document.hidden) {
+          stopAutoplay();
+        } else if (slider.getBoundingClientRect().top < window.innerHeight && slider.getBoundingClientRect().bottom > 0) {
+          startAutoplay();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

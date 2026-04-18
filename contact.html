@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'none'; form-action 'self' mailto:; upgrade-insecure-requests" />
+  <meta name="referrer" content="no-referrer" />
+  <title>Contact — FlameBot</title>
+  <link rel="icon" href="/assets/icon.ico" sizes="any" />
+  <link rel="icon" type="image/png" href="/assets/icon.png" />
+  <link rel="apple-touch-icon" href="/assets/icon.png" />
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #060814;
+      --bg-2: #070a1a;
+      --text: #f3f4f6;
+      --muted: rgba(243, 244, 246, 0.72);
+      --border: rgba(255, 255, 255, 0.10);
+      --border-2: rgba(255, 255, 255, 0.08);
+      --panel: rgba(255, 255, 255, 0.04);
+      --shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.45);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(900px 520px at 16% -8%, rgba(124, 58, 237, 0.35) 0%, rgba(124, 58, 237, 0) 60%),
+        radial-gradient(980px 540px at 90% 2%, rgba(34, 211, 238, 0.20) 0%, rgba(34, 211, 238, 0) 60%),
+        radial-gradient(880px 520px at 70% 110%, rgba(124, 58, 237, 0.18) 0%, rgba(124, 58, 237, 0) 55%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+    }
+
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 46px 18px 38px;
+    }
+
+    .topNav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: calc(var(--radius) + 8px);
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(8px);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .topNav a {
+      color: rgba(243, 244, 246, 0.88);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+      padding-bottom: 1px;
+      font-size: 13px;
+    }
+
+    .topNav a[aria-current="page"] {
+      color: rgba(243, 244, 246, 1);
+      border-bottom-color: rgba(255, 255, 255, 0.28);
+      font-weight: 800;
+    }
+
+    .topNavBrand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 850;
+      letter-spacing: -0.01em;
+    }
+
+    .topNavLinks {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 22px 18px;
+      border: 1px solid var(--border);
+      border-radius: calc(var(--radius) + 8px);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.03) 100%);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(8px);
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      background:
+        radial-gradient(700px 240px at 18% 0%, rgba(124, 58, 237, 0.35) 0%, rgba(124, 58, 237, 0) 65%),
+        radial-gradient(640px 240px at 88% 0%, rgba(34, 211, 238, 0.20) 0%, rgba(34, 211, 238, 0) 70%);
+      pointer-events: none;
+      opacity: 0.85;
+    }
+
+    .hero > * { position: relative; }
+
+    h1 {
+      font-size: 34px;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      margin: 0 0 8px;
+    }
+
+    p { line-height: 1.6; margin: 10px 0; }
+
+    .muted {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    a { color: rgba(243, 244, 246, 0.88); text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.16); padding-bottom: 1px; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .card {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      background: var(--panel);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(8px);
+    }
+
+    .card h2 {
+      margin: 0 0 8px;
+      font-size: 14px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(243, 244, 246, 0.70);
+    }
+
+    label { display: block; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(243,244,246,0.65); margin: 14px 0 6px; }
+    input, textarea {
+      width: 100%;
+      padding: 12px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(0,0,0,0.28);
+      color: var(--text);
+      font: inherit;
+      outline: none;
+    }
+    textarea { min-height: 140px; resize: vertical; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 18px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.04) 100%);
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 750;
+      letter-spacing: -0.01em;
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45);
+      width: fit-content;
+      cursor: pointer;
+    }
+
+    .btn:focus {
+      outline: 3px solid rgba(124, 58, 237, 0.35);
+      outline-offset: 2px;
+    }
+
+    .footer {
+      margin-top: 22px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border-2);
+      font-size: 13px;
+      color: var(--muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footerLinks {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    @media (max-width: 820px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 520px) {
+      .wrap { padding: 34px 14px 26px; }
+      h1 { font-size: 30px; }
+      .footer { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topNav" role="navigation" aria-label="Primary">
+      <div class="topNavBrand">
+        <span style="display:inline-block;width:8px;height:8px;border-radius:999px;background:rgba(255,122,24,0.75);box-shadow:0 0 22px rgba(255,122,24,0.55);"></span>
+        <span>FlameBot</span>
+      </div>
+      <div class="topNavLinks">
+        <a href="/">Home</a>
+        <a href="/download/">Downloads</a>
+        <a href="/about">About</a>
+        <a href="/contact" aria-current="page">Contact</a>
+        <a href="/terms">Terms</a>
+        <a href="/privacy">Privacy</a>
+      </div>
+    </div>
+    <div class="hero">
+      <h1>Contact</h1>
+      <p class="muted">For fastest help, include your FlameBot ID (from the app) and a short description of the issue.</p>
+      <p class="muted"><a href="/">Back to homepage</a></p>
+    </div>
+
+    <div class="grid">
+      <div class="card" aria-label="Email">
+        <h2>Email</h2>
+        <p class="muted" style="margin: 10px 0 0;"><strong>Business:</strong> <a id="businessEmail" href="mailto:mf1874548@gmail.com">mf1874548@gmail.com</a></p>
+        <p class="muted" style="margin: 8px 0 0;"><strong>Support:</strong> <a id="supportEmail" href="mailto:cmichaelfavour@gmail.com">cmichaelfavour@gmail.com</a></p>
+        <p class="muted" style="margin: 8px 0 0;"><strong>Phone:</strong> <a id="phone" href="tel:+2347071726082">+2347071726082</a></p>
+        <p class="muted" style="margin: 8px 0 0;"><strong>Location:</strong> <span id="location">6 Folorusho Street, By Bustop, Alagbole, Akute, Nigeria</span></p>
+      </div>
+
+      <div class="card" aria-label="Contact Form">
+        <h2>Contact Form</h2>
+        <p class="muted">This form opens your email client (no data is submitted to the website server).</p>
+
+        <form id="contactForm">
+          <label for="name">Name</label>
+          <input id="name" name="name" autocomplete="name" />
+
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" autocomplete="email" />
+
+          <label for="subject">Subject</label>
+          <input id="subject" name="subject" />
+
+          <label for="message">Message</label>
+          <textarea id="message" name="message"></textarea>
+
+          <div style="margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="btn" type="submit">Compose Email</button>
+            <a class="btn" href="/download/" style="border-bottom: none;">Downloads</a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div>© <span id="year"></span> FLAME CORE TECHNOLOGIES LTD. FlameBot. All rights reserved.</div>
+      <div class="footerLinks">
+        <a href="/about">About</a>
+        <a href="/terms">Terms</a>
+        <a href="/privacy">Privacy</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const el = document.getElementById('year');
+      if (el) el.textContent = String(new Date().getFullYear());
+    })();
+
+    (function () {
+      const form = document.getElementById('contactForm');
+      if (!form) return;
+
+      const supportEmailEl = document.getElementById('supportEmail');
+      const getSupportEmail = () => String(supportEmailEl ? supportEmailEl.textContent : '').trim();
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const name = String(document.getElementById('name')?.value || '').trim();
+        const email = String(document.getElementById('email')?.value || '').trim();
+        const subject = String(document.getElementById('subject')?.value || '').trim();
+        const message = String(document.getElementById('message')?.value || '').trim();
+
+        const to = encodeURIComponent(getSupportEmail() || 'cmichaelfavour@gmail.com');
+        const finalSubject = encodeURIComponent(subject || 'FlameBot Support');
+
+        const lines = [];
+        if (name) lines.push('Name: ' + name);
+        if (email) lines.push('Email: ' + email);
+        lines.push('');
+        lines.push(message);
+
+        const body = encodeURIComponent(lines.join('\n'));
+        const href = 'mailto:' + to + '?subject=' + finalSubject + '&body=' + body;
+
+        try { window.location.href = href; } catch (_) {}
+      });
+    })();
+  </script>
+</body>
+</html>

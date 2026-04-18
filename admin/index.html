@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; form-action 'self'; upgrade-insecure-requests" />
+  <meta name="referrer" content="no-referrer" />
+  <title>FlameBot Admin</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="/assets/icon.ico" sizes="any" />
+  <link rel="icon" type="image/png" href="/assets/icon.png" />
+  <link rel="stylesheet" href="/assets/admin.css?v=20260319b" />
+</head>
+<body>
+  <div class="aurora"></div>
+
+  <main class="shell authShell" id="auth-shell">
+    <section class="heroCard">
+      <a class="brandLockup" href="/">
+        <img src="/assets/logo.png" alt="FlameBot" />
+        <span>FlameBot</span>
+      </a>
+      <p class="eyebrow">Private Operations</p>
+      <h1>Admin sign-in</h1>
+      <p class="lead">Sign in first. No dashboard data loads until authentication succeeds.</p>
+    </section>
+
+    <section class="panel authPanel" id="login-panel">
+      <div class="panelHeader stackHeader">
+        <div>
+          <p class="sectionTag">Admin access</p>
+          <h2>Sign in</h2>
+        </div>
+        <p class="hint">Use the owner Gmail and password configured on the backend.</p>
+      </div>
+      <form id="login-form" class="stackForm" autocomplete="on">
+        <label>
+          <span>Gmail address</span>
+          <input id="login-email" name="email" type="email" placeholder="you@gmail.com" required />
+        </label>
+        <label>
+          <span>Password</span>
+          <input id="login-password" name="password" type="password" placeholder="Enter your password" required />
+        </label>
+        <button class="primaryButton" type="submit">Open admin dashboard</button>
+      </form>
+    </section>
+  </main>
+
+  <main class="shell appShell" id="app-shell" hidden>
+    <header class="workspaceHeader panel">
+      <div>
+        <p class="sectionTag">Authenticated</p>
+        <h2 id="admin-heading">Admin dashboard</h2>
+        <p class="hint" id="admin-subheading"></p>
+      </div>
+      <div class="actionsRow">
+        <button class="ghostButton" id="refresh-button" type="button">Refresh</button>
+        <button class="ghostButton" id="logout-button" type="button">Log out</button>
+      </div>
+    </header>
+
+    <div class="workspaceLayout">
+      <aside class="sidebar panel">
+        <p class="sectionTag">Admin menu</p>
+        <nav class="sideNav" id="side-nav">
+          <button class="navButton" data-view="dashboard" type="button">Dashboard</button>
+          <button class="navButton" data-view="ambassadors" type="button">Ambassadors</button>
+          <button class="navButton" data-view="users" type="button">Users</button>
+          <button class="navButton" data-view="referrals" type="button">Referral Tracking</button>
+          <button class="navButton" data-view="analytics" type="button">Analytics</button>
+        </nav>
+      </aside>
+
+      <section class="viewStack">
+        <section class="viewPanel" data-view-panel="dashboard">
+          <div class="panelHeader stackHeader">
+            <div>
+              <p class="sectionTag">Homepage</p>
+              <h2>System overview</h2>
+            </div>
+            <p class="hint">This page stays focused on summary cards, growth, and recent users.</p>
+          </div>
+          <div class="statsGrid" id="stats-grid"></div>
+          <div class="summaryGrid">
+            <section class="panel">
+              <div class="panelHeader stackHeader">
+                <div>
+                  <p class="sectionTag">Growth</p>
+                  <h2>Daily and weekly users</h2>
+                </div>
+              </div>
+              <div id="growth-trend" class="trendList"></div>
+            </section>
+
+            <section class="panel tablePanel">
+              <div class="panelHeader stackHeader">
+                <div>
+                  <p class="sectionTag">Recent users</p>
+                  <h2>Latest activity</h2>
+                </div>
+                <p class="hint">The most recent users and their current status.</p>
+              </div>
+              <div class="tableWrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>FlameBot ID</th>
+                      <th>Telegram</th>
+                      <th>Status</th>
+                      <th>Ambassador</th>
+                      <th>Last activity</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recent-users-body"></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panelHeader stackHeader">
+                <div>
+                  <p class="sectionTag">Subscription Controls</p>
+                  <h2>Payment enforcement</h2>
+                </div>
+                <p class="hint">This updates the global backend enforcement toggle and minimum supported app version.</p>
+              </div>
+              <form id="subscription-settings-form" class="stackForm compactForm">
+                <label>
+                  <span>Enable subscription enforcement</span>
+                  <select id="subscription-enforcement-enabled" name="enforcement_enabled">
+                    <option value="false">Disabled</option>
+                    <option value="true">Enabled</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Minimum supported app version</span>
+                  <input id="subscription-min-version" name="min_supported_app_version" type="text" placeholder="e.g. 2.0.0" />
+                </label>
+                <label>
+                  <span>Provider readiness</span>
+                  <textarea id="subscription-provider-readiness" rows="7" readonly></textarea>
+                </label>
+                <button class="primaryButton" id="subscription-settings-save" type="submit">Save subscription settings</button>
+              </form>
+            </section>
+
+            <section class="panel">
+              <div class="panelHeader stackHeader">
+                <div>
+                  <p class="sectionTag">Subscription Plans</p>
+                  <h2>Plan catalog</h2>
+                </div>
+                <p class="hint">Create, edit, and activate/deactivate pricing plans. Changes take effect immediately.</p>
+              </div>
+
+              <form id="plan-create-form" class="stackForm compactForm">
+                <p class="sectionTag">Add new plan</p>
+                <label>
+                  <span>Plan code</span>
+                  <input id="plan-code" name="plan_code" type="text" placeholder="e.g. monthly, yearly, promo_7day" required />
+                </label>
+                <label>
+                  <span>Display name</span>
+                  <input id="plan-display-name" name="display_name" type="text" placeholder="e.g. Monthly Plan" required />
+                </label>
+                <label>
+                  <span>Duration (days)</span>
+                  <input id="plan-duration-days" name="duration_days" type="number" min="1" placeholder="e.g. 30" required />
+                </label>
+                <label>
+                  <span>Price (USD cents)</span>
+                  <input id="plan-price-cents" name="price_usd_cents" type="number" min="0" placeholder="e.g. 1000 = $10.00" required />
+                </label>
+                <label>
+                  <span>Sort order</span>
+                  <input id="plan-sort-order" name="sort_order" type="number" min="0" value="0" />
+                </label>
+                <label>
+                  <span>Active</span>
+                  <select id="plan-is-active" name="is_active">
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
+                  </select>
+                </label>
+                <button class="primaryButton" id="plan-create-btn" type="submit">Create plan</button>
+              </form>
+
+              <div class="tableWrap plansTableWrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Code</th>
+                      <th>Name</th>
+                      <th>Days</th>
+                      <th>Price</th>
+                      <th>Active</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="plans-table-body"></tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section class="viewPanel" data-view-panel="ambassadors" hidden>
+          <div class="sectionGrid splitGrid">
+            <section class="panel">
+              <div class="panelHeader stackHeader">
+                <div>
+                  <p class="sectionTag">Ambassadors</p>
+                  <h2>Create ambassador</h2>
+                </div>
+                <p class="hint">Create ambassador access and share the dashboard URL plus Telegram referral link.</p>
+              </div>
+              <form id="mini-admin-form" class="stackForm compactForm">
+                <label>
+                  <span>Name</span>
+                  <input id="mini-admin-name" name="name" type="text" placeholder="Ambassador name" required />
+                </label>
+                <label>
+                  <span>Gmail</span>
+                  <input id="mini-admin-email" name="email" type="email" placeholder="ambassador@gmail.com" required />
+                </label>
+                <label>
+                  <span>Telegram ID</span>
+                  <input id="mini-admin-telegram-id" name="telegram_id" type="text" placeholder="Telegram user ID" required />
+                </label>
+                <label>
+                  <span>Verification code</span>
+                  <input id="mini-admin-verification-code" name="verification_code" type="text" placeholder="Code sent by prereg bot" />
+                </label>
+                <input id="mini-admin-verification-token" name="verification_token" type="hidden" />
+                <input id="mini-admin-onboarding-key" name="onboarding_key" type="hidden" />
+                <p class="hint" id="mini-admin-code-countdown">Verification code not active.</p>
+                <div class="actionsRow">
+                  <button class="ghostButton" id="mini-admin-send-code" type="button">Send code</button>
+                  <button class="ghostButton" id="mini-admin-verify-code" type="button">Verify code</button>
+                </div>
+                <button class="primaryButton" type="submit">Create ambassador</button>
+              </form>
+            </section>
+
+            <section class="panel tablePanel">
+              <div class="panelHeader stackHeader">
+                <div>
+                  <p class="sectionTag">Performance</p>
+                  <h2>Ambassador list</h2>
+                </div>
+                <p class="hint">Each ambassador shows referral counts and conversion rate.</p>
+              </div>
+              <div class="tableWrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Ambassador</th>
+                      <th>Telegram</th>
+                      <th>Total</th>
+                      <th>Pre-reg</th>
+                      <th>Registered</th>
+                      <th>Paid</th>
+                      <th>Active</th>
+                      <th>Conversion</th>
+                    </tr>
+                  </thead>
+                  <tbody id="ambassadors-table-body"></tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section class="viewPanel" data-view-panel="users" hidden>
+          <div class="sectionGrid splitGridWide">
+            <section class="panel">
+              <div class="panelHeader stackHeader">
+                <div>
+                  <p class="sectionTag">Users</p>
+                  <h2>Filter directory</h2>
+                </div>
+              </div>
+              <form id="filters-form" class="stackForm compactForm">
+                <label>
+                  <span>Search</span>
+                  <input id="filter-search" name="search" type="search" placeholder="Telegram ID, username, FlameBot ID, ambassador" />
+                </label>
+                <label>
+                  <span>Status</span>
+                  <select id="filter-status" name="status">
+                    <option value="">All statuses</option>
+                    <option value="pre_registered">Pre-registered</option>
+                    <option value="registered">Registered</option>
+                    <option value="paid">Paid</option>
+                  </select>
+                </label>
+                <button class="primaryButton" type="submit">Apply filters</button>
+              </form>
+
+              <div class="subStats" id="users-substats"></div>
+
+              <div class="editorWrap">
+                <div class="panelHeader stackHeader compactTop">
+                  <div>
+                    <p class="sectionTag">Selected user</p>
+                    <h2>Edit record</h2>
+                  </div>
+                  <p class="hint" id="selected-user-meta">Select a user from the table.</p>
+                </div>
+                <form id="user-editor-form" class="stackForm compactForm">
+                  <label>
+                    <span>Status</span>
+                    <select id="editor-status" name="registration_status">
+                      <option value="pre_registered">Pre-registered</option>
+                      <option value="registered">Registered</option>
+                      <option value="paid">Paid</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>Referring ambassador Telegram ID</span>
+                    <select id="editor-referrer" name="referred_by_admin_id">
+                      <option value="">Unassigned</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>Gmail</span>
+                    <input id="editor-email" name="email" type="email" placeholder="user@gmail.com" />
+                  </label>
+                  <label>
+                    <span>Password</span>
+                    <input id="editor-password" name="password" type="password" placeholder="Set or replace user password" />
+                  </label>
+                  <label>
+                    <span>Ambassador access</span>
+                    <select id="editor-ambassador" name="is_ambassador">
+                      <option value="false">Regular user</option>
+                      <option value="true">Ambassador</option>
+                    </select>
+                  </label>
+                  <label>
+                    <span>Owner access</span>
+                    <select id="editor-owner" name="is_owner">
+                      <option value="false">No</option>
+                      <option value="true">Yes</option>
+                    </select>
+                  </label>
+                  <div class="actionsRow">
+                    <button class="ghostButton" id="clear-referrer-button" type="button">Clear referrer</button>
+                    <button class="primaryButton" type="submit">Save changes</button>
+                  </div>
+                </form>
+              </div>
+            </section>
+
+            <section class="panel tablePanel">
+              <div class="panelHeader stackHeader">
+                <div>
+                  <p class="sectionTag">Directory</p>
+                  <h2>All users</h2>
+                </div>
+                <p class="hint" id="table-caption">Showing the latest users from the backend.</p>
+              </div>
+              <div class="tableWrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>FlameBot ID</th>
+                      <th>Telegram</th>
+                      <th>Status</th>
+                      <th>Platform</th>
+                      <th>Ambassador</th>
+                      <th>Last login</th>
+                      <th>Last activity</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="users-table-body"></tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section class="viewPanel" data-view-panel="referrals" hidden>
+          <div class="sectionGrid splitGrid">
+            <section class="panel tablePanel">
+              <div class="panelHeader stackHeader">
+                <div>
+                  <p class="sectionTag">Referral tracking</p>
+                  <h2>Ambassador leaderboard</h2>
+                </div>
+                <p class="hint">Monitor total referred users and conversion quality by ambassador.</p>
+              </div>
+              <div class="tableWrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Ambassador</th>
+                      <th>Total</th>
+                      <th>Pre-reg</th>
+                      <th>Registered</th>
+                      <th>Paid</th>
+                      <th>Conversion</th>
+                    </tr>
+                  </thead>
+                  <tbody id="referral-performance-body"></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="panel tablePanel">
+              <div class="panelHeader stackHeader">
+                <div>
+                  <p class="sectionTag">Recent referrals</p>
+                  <h2>Latest referred users</h2>
+                </div>
+                <p class="hint">Quick look at the newest users who joined through ambassador links.</p>
+              </div>
+              <div class="tableWrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>User</th>
+                      <th>Ambassador</th>
+                      <th>Status</th>
+                      <th>Last activity</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recent-referrals-body"></tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section class="viewPanel" data-view-panel="analytics" hidden>
+          <div class="panelHeader stackHeader">
+            <div>
+              <p class="sectionTag">Analytics</p>
+              <h2>Traffic and backend activity</h2>
+            </div>
+            <p class="hint">Admin-only visibility into site traffic, recent user activity, and backend signal presence.</p>
+          </div>
+          <div class="statsGrid" id="analytics-cards"></div>
+          <div class="summaryGrid analyticsGrid">
+            <section class="panel">
+              <div class="panelHeader stackHeader">
+                <div>
+                  <p class="sectionTag">Daily traffic</p>
+                  <h2>Site visits</h2>
+                </div>
+              </div>
+              <div id="daily-traffic" class="trendList"></div>
+            </section>
+
+            <section class="panel tablePanel">
+              <div class="panelHeader stackHeader">
+                <div>
+                  <p class="sectionTag">User activity</p>
+                  <h2>Recent last seen</h2>
+                </div>
+              </div>
+              <div class="tableWrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>User</th>
+                      <th>Status</th>
+                      <th>Platform</th>
+                      <th>Last activity</th>
+                    </tr>
+                  </thead>
+                  <tbody id="analytics-users-body"></tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+        </section>
+      </section>
+    </div>
+  </main>
+
+  <div class="toast" id="toast" hidden></div>
+  <script src="/assets/admin.js?v=20260321a" defer></script>
+</body>
+</html>

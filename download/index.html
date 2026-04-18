@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'none'; form-action 'self' mailto:; upgrade-insecure-requests" />
+  <meta name="referrer" content="no-referrer" />
+  <title>FlameBot Downloads</title>
+  <meta name="description" content="Download FlameBot for Windows or macOS. Desktop app with MT4/MT5 Expert Advisors included." />
+  <link rel="canonical" href="https://www.flamebotapp.com/download/" />
+  <meta property="og:title" content="FlameBot Downloads" />
+  <meta property="og:description" content="Get FlameBot for Windows or macOS. Includes MT4/MT5 EAs in the same bundle." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://www.flamebotapp.com/download/" />
+  <meta property="og:image" content="/assets/logo.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="/assets/icon.ico" sizes="any" />
+  <link rel="icon" type="image/png" href="/assets/icon.png" />
+  <link rel="apple-touch-icon" href="/assets/icon.png" />
+  <style>
+    :root {
+      color-scheme: dark;
+
+      /* Premium dark + tech glow */
+      --bg: #060814;
+      --bg-2: #070a1a;
+      --text: #f3f4f6;
+      --muted: rgba(243, 244, 246, 0.72);
+      --border: rgba(255, 255, 255, 0.10);
+      --border-2: rgba(255, 255, 255, 0.08);
+      --panel: rgba(255, 255, 255, 0.04);
+
+      /* Use system accent when available; fall back to a neon-violet. */
+      --accent: AccentColor;
+      --accent-fallback: #7c3aed;
+      --accent-2: #22d3ee;
+
+      --shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.45);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(900px 520px at 16% -8%, rgba(124, 58, 237, 0.35) 0%, rgba(124, 58, 237, 0) 60%),
+        radial-gradient(980px 540px at 90% 2%, rgba(34, 211, 238, 0.20) 0%, rgba(34, 211, 238, 0) 60%),
+        radial-gradient(880px 520px at 70% 110%, rgba(124, 58, 237, 0.18) 0%, rgba(124, 58, 237, 0) 55%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
+    }
+
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 44px 18px 34px;
+    }
+
+    .topNav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: calc(var(--radius) + 8px);
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(8px);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .topNav a {
+      color: rgba(243, 244, 246, 0.88);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+      padding-bottom: 1px;
+      font-size: 13px;
+    }
+
+    .topNav a[aria-current="page"] {
+      color: rgba(243, 244, 246, 1);
+      border-bottom-color: rgba(255, 255, 255, 0.28);
+      font-weight: 800;
+    }
+
+    .topNavBrand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 850;
+      letter-spacing: -0.01em;
+    }
+
+    .topNavLinks {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 22px 18px;
+      border: 1px solid var(--border);
+      border-radius: calc(var(--radius) + 8px);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.03) 100%);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(8px);
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      background:
+        radial-gradient(700px 240px at 18% 0%, rgba(124, 58, 237, 0.35) 0%, rgba(124, 58, 237, 0) 65%),
+        radial-gradient(640px 240px at 88% 0%, rgba(34, 211, 238, 0.20) 0%, rgba(34, 211, 238, 0) 70%);
+      pointer-events: none;
+      opacity: 0.85;
+    }
+
+    .hero > * { position: relative; }
+
+    .cardTitle {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .osIcon {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
+      opacity: 0.92;
+    }
+
+    .osIcon path,
+    .osIcon rect {
+      fill: rgba(243, 244, 246, 0.88);
+    }
+
+    h1 {
+      font-size: 40px;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin: 0 0 10px;
+    }
+
+    p { line-height: 1.55; margin: 10px 0; }
+
+    .muted {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .cards {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      margin-top: 16px;
+    }
+
+    .section {
+      margin-top: 18px;
+    }
+
+    .sectionHead {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 0 0 12px;
+    }
+
+    .sectionHead h2 {
+      margin: 0;
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(243, 244, 246, 0.70);
+    }
+
+    .shots {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+    }
+
+    figure.shot {
+      margin: 0;
+      border-radius: calc(var(--radius) + 4px);
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.03);
+      overflow: hidden;
+      position: relative;
+      box-shadow:
+        0 26px 75px rgba(0, 0, 0, 0.58),
+        0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+      backdrop-filter: blur(10px);
+    }
+
+    figure.shot::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      background:
+        radial-gradient(680px 240px at 15% 0%, rgba(255, 122, 24, 0.10) 0%, transparent 55%),
+        radial-gradient(620px 240px at 85% 10%, rgba(34, 211, 238, 0.08) 0%, transparent 60%);
+      pointer-events: none;
+      opacity: 0.9;
+    }
+
+    .shotInner {
+      position: relative;
+      padding: 10px;
+    }
+
+    .shotFrame {
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      background: rgba(0, 0, 0, 0.30);
+      overflow: hidden;
+    }
+
+    .shotImg {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      filter: saturate(1.02) contrast(1.02);
+    }
+
+    .shotCaption {
+      margin-top: 10px;
+      font-size: 12px;
+      color: rgba(243, 244, 246, 0.70);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: rgba(255, 122, 24, 0.72);
+      box-shadow: 0 0 20px rgba(255, 122, 24, 0.55);
+      flex: 0 0 auto;
+    }
+
+    .card {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      background: var(--panel);
+      box-shadow: var(--shadow-soft);
+      backdrop-filter: blur(8px);
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      background:
+        radial-gradient(480px 190px at 16% 0%, rgba(124, 58, 237, 0.20) 0%, rgba(124, 58, 237, 0) 62%),
+        radial-gradient(460px 190px at 88% 0%, rgba(34, 211, 238, 0.12) 0%, rgba(34, 211, 238, 0) 70%);
+      opacity: 0.55;
+      pointer-events: none;
+    }
+
+    .card > * { position: relative; }
+
+    .card h2 { margin: 0 0 10px; font-size: 16px; letter-spacing: -0.01em; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 11px 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.10) 0%, rgba(255, 255, 255, 0.04) 100%);
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45);
+    }
+
+    .btn:focus {
+      outline: 3px solid rgba(124, 58, 237, 0.35);
+      outline-offset: 2px;
+    }
+
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.95em; }
+    ul { margin: 12px 0 0; padding-left: 18px; }
+    li { margin: 7px 0; }
+    .footer { margin-top: 22px; padding-top: 14px; border-top: 1px solid var(--border-2); font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+    .footerLinks { display: inline-flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .footerLinks a { color: inherit; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.16); padding-bottom: 1px; }
+
+    @media (max-width: 520px) {
+      .wrap { padding: 34px 14px 26px; }
+      .hero { padding: 18px 14px; }
+      h1 { font-size: 32px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topNav" role="navigation" aria-label="Primary">
+      <div class="topNavBrand">
+        <span style="display:inline-block;width:8px;height:8px;border-radius:999px;background:rgba(255,122,24,0.75);box-shadow:0 0 22px rgba(255,122,24,0.55);"></span>
+        <span>FlameBot</span>
+      </div>
+      <div class="topNavLinks">
+        <a href="/">Home</a>
+        <a href="/download/" aria-current="page">Downloads</a>
+        <a href="/about.html">About</a>
+        <a href="/contact.html">Contact</a>
+        <a href="/terms.html">Terms</a>
+        <a href="/privacy.html">Privacy</a>
+      </div>
+    </div>
+    <div class="hero">
+      <h1>FlameBot Downloads</h1>
+      <p class="muted">FlameBot is a desktop companion that helps you set up and manage your trading automation on MetaTrader. Each bundle includes the FlameBot app plus the included MT4 + MT5 Expert Advisors (EAs).</p>
+      <p class="muted">Download the desktop app bundle. The MT4 + MT5 EAs are included inside the same download.</p>
+      <div style="margin-top: 14px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+        <a class="btn" id="autoDownloadBtn" href="/download/">Download for your device</a>
+        <span class="muted" id="detectedOsLabel" style="font-size: 13px;"></span>
+      </div>
+      <p class="muted" style="margin-top: 8px;">Windows users: download, open the app, and install the EAs from Settings.</p>
+      <p class="muted" style="margin-top: 8px;">macOS users: download, unzip, move <code>FlameBot.app</code> to Applications, then copy the included EAs into MT4/MT5.</p>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <h2 class="cardTitle">
+          <svg class="osIcon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <rect x="2" y="3" width="9" height="9" rx="1.2" />
+            <rect x="13" y="3" width="9" height="9" rx="1.2" />
+            <rect x="2" y="14" width="9" height="9" rx="1.2" />
+            <rect x="13" y="14" width="9" height="9" rx="1.2" />
+          </svg>
+          Windows (App + MT4/MT5 EAs)
+        </h2>
+        <p class="muted">Single zip bundle: FlameBot + EAs + installer helper.</p>
+        <a class="btn" href="https://github.com/Emperorgeneral/FLAMEBOT/releases/latest/download/FlameBot-Windows.zip">Download FlameBot for Windows</a>
+        <ul class="muted">
+          <li>Run <code>FlameBot.exe</code></li>
+          <li>Install EAs: run <code>Install_EAs.ps1</code> or copy manually</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2 class="cardTitle">
+          <svg class="osIcon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M16.6 13.2c0-2.2 1.8-3.4 1.9-3.5-1-1.5-2.7-1.7-3.2-1.7-1.4-.1-2.7.8-3.4.8-.7 0-1.8-.8-3-.8-1.5 0-2.9.9-3.7 2.2-1.6 2.7-.4 6.7 1.1 8.9.7 1.1 1.6 2.3 2.8 2.2 1.1 0 1.5-.7 2.9-.7 1.3 0 1.7.7 2.9.7 1.2 0 2-.9 2.7-2 .8-1.2 1.1-2.4 1.1-2.4-.1 0-2.1-.8-2.1-3.7z"/>
+            <path d="M14.9 6.1c.6-.7 1-1.8.9-2.8-.9.1-2 .6-2.6 1.3-.6.7-1.1 1.7-.9 2.7 1 0 2-.5 2.6-1.2z"/>
+          </svg>
+          macOS
+        </h2>
+        <p class="muted">Single zip bundle: FlameBot.app + MT4/MT5 EAs.</p>
+        <a class="btn" href="https://github.com/Emperorgeneral/FLAMEBOT/releases/latest/download/FlameBot-macOS.zip">Download FlameBot for macOS</a>
+        <ul class="muted">
+          <li>Unzip <code>FlameBot-macOS.zip</code></li>
+          <li>Move <code>FlameBot.app</code> to Applications</li>
+          <li>If blocked: right‑click <code>FlameBot.app</code> → Open</li>
+          <li>Copy EAs from the included <code>eas/</code> folder into MT4/MT5</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>MetaTrader Setup</h2>
+        <p class="muted">After installing the EA files:</p>
+        <ul class="muted">
+          <li>Restart MT4/MT5</li>
+          <li>Attach the EA to a chart</li>
+          <li>MT4: ensure WebRequest is allowed for your server URL</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="section" id="preview" aria-label="App Preview" hidden>
+      <div class="sectionHead">
+        <h2>App Preview</h2>
+      </div>
+      <div class="shots">
+        <figure class="shot" hidden>
+          <div class="shotInner">
+            <div class="shotFrame">
+              <img class="shotImg" data-shot src="/assets/screenshots/download-shot-1.png" alt="FlameBot Telegram Copier interface preview" loading="lazy" />
+            </div>
+            <figcaption class="shotCaption"><span class="dot" aria-hidden="true"></span>Telegram Copier view</figcaption>
+          </div>
+        </figure>
+
+        <figure class="shot" hidden>
+          <div class="shotInner">
+            <div class="shotFrame">
+              <img class="shotImg" data-shot src="/assets/screenshots/download-shot-2.png" alt="FlameBot application preview" loading="lazy" />
+            </div>
+            <figcaption class="shotCaption"><span class="dot" aria-hidden="true"></span>Desktop app view</figcaption>
+          </div>
+        </figure>
+
+        <figure class="shot" hidden>
+          <div class="shotInner">
+            <div class="shotFrame">
+              <img class="shotImg" data-shot src="/assets/screenshots/download-shot-3.png" alt="FlameBot Telegram Copier preview screen" loading="lazy" />
+            </div>
+            <figcaption class="shotCaption"><span class="dot" aria-hidden="true"></span>Execution preview</figcaption>
+          </div>
+        </figure>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div>© <span id="year"></span> FLAME CORE TECHNOLOGIES LTD. FlameBot. All rights reserved.</div>
+      <div class="footerLinks">
+        <a href="/about.html">About</a>
+        <a href="/contact.html">Contact</a>
+        <a href="/terms.html">Terms</a>
+        <a href="/privacy.html">Privacy</a>
+        <a href="/">Home</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Keep the copyright year current.
+    (function () {
+      const el = document.getElementById('year');
+      if (el) el.textContent = String(new Date().getFullYear());
+    })();
+
+    // Auto-select the best download for the current device.
+    (function () {
+      const winUrl = 'https://github.com/Emperorgeneral/FLAMEBOT/releases/latest/download/FlameBot-Windows.zip';
+      const macUrl = 'https://github.com/Emperorgeneral/FLAMEBOT/releases/latest/download/FlameBot-macOS.zip';
+
+      const btn = document.getElementById('autoDownloadBtn');
+      const label = document.getElementById('detectedOsLabel');
+      if (!btn) return;
+
+      const ua = String(navigator.userAgent || '').toLowerCase();
+      const platform = String(navigator.platform || '').toLowerCase();
+
+      const isMac = platform.includes('mac') || ua.includes('mac os') || ua.includes('macintosh');
+      const isWin = platform.includes('win') || ua.includes('windows');
+
+      if (isMac) {
+        btn.href = macUrl;
+        btn.textContent = 'Download for macOS';
+        if (label) label.textContent = 'Detected: macOS';
+        return;
+      }
+      if (isWin) {
+        btn.href = winUrl;
+        btn.textContent = 'Download for Windows';
+        if (label) label.textContent = 'Detected: Windows';
+        return;
+      }
+
+      // Unknown device: keep the user on this page with both options visible.
+      btn.href = '#';
+      btn.textContent = 'Choose a download below';
+      if (label) label.textContent = '';
+    })();
+
+    // Hide missing screenshots so the page never shows broken image icons.
+    (function () {
+      const section = document.getElementById('preview');
+      if (!section) return;
+
+      const images = Array.from(section.querySelectorAll('img[data-shot]'));
+      if (!images.length) return;
+
+      let loadedCount = 0;
+      let resolvedCount = 0;
+
+      const finalize = () => {
+        if (resolvedCount !== images.length) return;
+        section.hidden = loadedCount === 0;
+      };
+
+      images.forEach((img) => {
+        const figure = img.closest('figure');
+        const show = () => {
+          loadedCount += 1;
+          if (figure) figure.hidden = false;
+        };
+        const done = () => {
+          resolvedCount += 1;
+          finalize();
+        };
+
+        const preloader = new Image();
+        preloader.onload = () => { show(); done(); };
+        preloader.onerror = () => { if (figure) figure.remove(); done(); };
+        preloader.src = img.currentSrc || img.src;
+      });
+    })();
+  </script>
+</body>
+</html>

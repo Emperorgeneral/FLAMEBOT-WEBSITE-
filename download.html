@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'none'; form-action 'self' mailto:; upgrade-insecure-requests" />
+  <meta name="referrer" content="no-referrer" />
+  <title>Redirecting…</title>
+  <link rel="icon" href="/assets/icon.ico" sizes="any" />
+  <link rel="icon" type="image/png" href="/assets/icon.png" />
+  <link rel="apple-touch-icon" href="/assets/icon.png" />
+  <meta http-equiv="refresh" content="0; url=/download/" />
+  <link rel="canonical" href="/download/" />
+  <style>
+    :root { color-scheme: dark; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: #060814;
+      color: rgba(243, 244, 246, 0.9);
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      padding: 22px;
+    }
+    a { color: inherit; }
+  </style>
+</head>
+<body>
+  <div>
+    <div style="font-weight: 800; font-size: 18px;">Redirecting to downloads…</div>
+    <div style="margin-top: 10px; opacity: 0.75;">If you are not redirected, open <a href="/download/">/download/</a>.</div>
+  </div>
+
+  <script>
+    (function () {
+      // Prefer JS redirect so the browser history doesn't keep download.html.
+      try { window.location.replace('/download/'); } catch (_) {}
+    })();
+  </script>
+</body>
+</html>

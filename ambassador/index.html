@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; form-action 'self'; upgrade-insecure-requests" />
+  <meta name="referrer" content="no-referrer" />
+  <title>FlameBot Ambassador</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="/assets/icon.ico" sizes="any" />
+  <link rel="icon" type="image/png" href="/assets/icon.png" />
+  <link rel="stylesheet" href="/assets/admin.css?v=20260320c" />
+</head>
+<body>
+  <div class="aurora"></div>
+
+  <main class="shell authShell" id="auth-shell">
+    <section class="heroCard">
+      <a class="brandLockup" href="/">
+        <img src="/assets/logo.png" alt="FlameBot" />
+        <span>FlameBot</span>
+      </a>
+      <p class="eyebrow">Ambassador Portal</p>
+      <h1>Ambassador sign-in</h1>
+      <p class="lead">Sign in first. Referral counts, user lists, and dashboard data stay hidden until authentication succeeds.</p>
+    </section>
+
+    <section class="panel authPanel" id="login-panel">
+      <div class="panelHeader stackHeader">
+        <div>
+          <p class="sectionTag">Ambassador access</p>
+          <h2>Sign in</h2>
+        </div>
+        <p class="hint">Use the Gmail and password assigned by the main admin.</p>
+      </div>
+      <form id="login-form" class="stackForm" autocomplete="on">
+        <label>
+          <span>Gmail address</span>
+          <input name="email" type="email" placeholder="you@gmail.com" required />
+        </label>
+        <label>
+          <span>Password</span>
+          <input name="password" type="password" placeholder="Enter your password" required />
+        </label>
+        <button class="primaryButton" type="submit">Open ambassador dashboard</button>
+      </form>
+    </section>
+  </main>
+
+  <main class="shell appShell" id="app-shell" hidden>
+    <header class="workspaceHeader panel">
+      <div>
+        <p class="sectionTag">Authenticated</p>
+        <h2 id="dashboard-heading">Ambassador dashboard</h2>
+        <p class="hint" id="dashboard-subheading"></p>
+      </div>
+      <div class="actionsRow">
+        <button class="ghostButton" id="refresh-button" type="button">Refresh</button>
+        <button class="ghostButton" id="logout-button" type="button">Log out</button>
+      </div>
+    </header>
+
+    <div class="workspaceLayout compactWorkspace">
+      <aside class="sidebar panel">
+        <p class="sectionTag">Menu</p>
+        <nav class="sideNav" id="side-nav">
+          <button class="navButton" data-view="dashboard" type="button">Dashboard</button>
+          <button class="navButton" data-view="users" type="button">Referred Users</button>
+        </nav>
+      </aside>
+
+      <section class="viewStack">
+        <section class="viewPanel" data-view-panel="dashboard">
+          <div class="statsGrid" id="stats-grid"></div>
+          <div class="summaryGrid">
+            <section class="panel">
+              <div class="panelHeader stackHeader">
+                <div>
+                  <p class="sectionTag">Your link</p>
+                  <h2>Referral access</h2>
+                </div>
+              </div>
+              <div class="stackForm compactForm">
+                <label>
+                  <span>Telegram referral token</span>
+                  <input id="referral-token" type="text" readonly />
+                </label>
+                <label>
+                  <span>Bot link</span>
+                  <input id="referral-link" type="text" readonly />
+                </label>
+              </div>
+            </section>
+
+            <section class="panel tablePanel">
+              <div class="panelHeader stackHeader">
+                <div>
+                  <p class="sectionTag">Recent users</p>
+                  <h2>Latest referrals</h2>
+                </div>
+              </div>
+              <div class="tableWrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>User</th>
+                      <th>Status</th>
+                      <th>Platform</th>
+                      <th>Last activity</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recent-users-body"></tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+
+          <section class="panel">
+            <div class="panelHeader stackHeader">
+              <div>
+                <p class="sectionTag">Security</p>
+                <h2>Change password</h2>
+              </div>
+              <p class="hint">Use your current password, then set a new one.</p>
+            </div>
+            <form id="password-form" class="stackForm compactForm" autocomplete="off">
+              <label>
+                <span>Current password</span>
+                <input id="password-current" name="current_password" type="password" placeholder="Current password" required />
+              </label>
+              <label>
+                <span>New password</span>
+                <input id="password-new" name="new_password" type="password" placeholder="New password" required />
+              </label>
+              <label>
+                <span>Confirm new password</span>
+                <input id="password-confirm" name="confirm_password" type="password" placeholder="Confirm new password" required />
+              </label>
+              <button class="primaryButton" type="submit">Update password</button>
+            </form>
+          </section>
+        </section>
+
+        <section class="viewPanel" data-view-panel="users" hidden>
+          <section class="panel tablePanel">
+            <div class="panelHeader stackHeader">
+              <div>
+                <p class="sectionTag">Your referrals</p>
+                <h2>Users</h2>
+              </div>
+              <p class="hint" id="table-caption">Showing users linked to your referral.</p>
+            </div>
+            <div class="tableWrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>FlameBot ID</th>
+                    <th>Telegram</th>
+                    <th>Status</th>
+                    <th>Platform</th>
+                    <th>Last login</th>
+                    <th>Last activity</th>
+                  </tr>
+                </thead>
+                <tbody id="users-table-body"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+      </section>
+    </div>
+  </main>
+
+  <div class="toast" id="toast" hidden></div>
+  <script src="/assets/ambassador.js?v=20260320c" defer></script>
+</body>
+</html>
