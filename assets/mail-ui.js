@@ -70,6 +70,7 @@ function escapeHtml(value) {
 async function request(path, options = {}) {
   const response = await fetch(`${API_ROOT}${path}`, {
     method: options.method || 'GET',
+    credentials: 'same-origin',
     headers: {
       Accept: 'application/json',
       ...(options.body ? { 'Content-Type': 'application/json' } : {}),
@@ -79,9 +80,13 @@ async function request(path, options = {}) {
 
   const payload = await response.json().catch(() => ({ status: 'ERROR', message: 'Invalid response from API' }));
   if (response.status === 401) {
-    state.authenticated = false;
-    renderAuthState();
-    throw new Error(payload?.message || 'Sign in required');
+    const message = String(payload?.message || 'Sign in required');
+    // Only clear local session state when the website auth layer rejects the request.
+    if (/sign in required/i.test(message)) {
+      state.authenticated = false;
+      renderAuthState();
+    }
+    throw new Error(message);
   }
   if (!response.ok) {
     const message = payload && payload.message ? payload.message : `Request failed (${response.status})`;
@@ -93,6 +98,7 @@ async function request(path, options = {}) {
 async function checkSession() {
   const response = await fetch(`${API_ROOT}/auth/me`, {
     method: 'GET',
+    credentials: 'same-origin',
     headers: {
       Accept: 'application/json',
     },
