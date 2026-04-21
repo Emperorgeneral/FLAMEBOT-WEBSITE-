@@ -28,7 +28,7 @@ const EMAIL_API_BASE_URL = String(
   || ''
 ).trim().replace(/\/+$/, '');
 const EMAIL_API_KEY = String(process.env.FLAMEBOT_EMAIL_API_KEY || '').trim();
-const MAIL_UI_USERNAME = String(process.env.FLAMEBOT_MAIL_UI_USERNAME || '').trim();
+const MAIL_UI_EMAIL = String(process.env.FLAMEBOT_MAIL_UI_EMAIL || '').trim();
 const MAIL_UI_PASSWORD = String(process.env.FLAMEBOT_MAIL_UI_PASSWORD || '').trim();
 const MAIL_UI_SESSION_SECRET = String(process.env.FLAMEBOT_MAIL_UI_SESSION_SECRET || EMAIL_API_KEY).trim();
 const MAIL_UI_SESSION_COOKIE_NAME = 'flamebot_mail_session';
@@ -113,7 +113,7 @@ function readJsonBody(req, maxBytes = 65536) {
 }
 
 function isMailUiAuthEnabled() {
-  return Boolean(MAIL_UI_USERNAME && MAIL_UI_PASSWORD && MAIL_UI_SESSION_SECRET);
+  return Boolean(MAIL_UI_EMAIL && MAIL_UI_PASSWORD && MAIL_UI_SESSION_SECRET);
 }
 
 function timingSafeCompare(a, b) {
@@ -125,10 +125,10 @@ function timingSafeCompare(a, b) {
   return crypto.timingSafeEqual(aBuf, bBuf);
 }
 
-function buildMailUiSessionToken(username) {
+function buildMailUiSessionToken(email) {
   const issuedAt = String(Date.now());
   const nonce = crypto.randomBytes(16).toString('hex');
-  const payload = `${username}.${issuedAt}.${nonce}`;
+  const payload = `${email}.${issuedAt}.${nonce}`;
   const signature = crypto
     .createHmac('sha256', MAIL_UI_SESSION_SECRET)
     .update(payload)
@@ -141,11 +141,11 @@ function verifyMailUiSessionToken(token) {
   if (parts.length !== 4) {
     return false;
   }
-  const [username, issuedAtRaw, nonce, signature] = parts;
-  if (!username || !issuedAtRaw || !nonce || !signature) {
+  const [email, issuedAtRaw, nonce, signature] = parts;
+  if (!email || !issuedAtRaw || !nonce || !signature) {
     return false;
   }
-  if (!timingSafeCompare(username, MAIL_UI_USERNAME)) {
+  if (!timingSafeCompare(email, MAIL_UI_EMAIL)) {
     return false;
   }
   const issuedAt = Number(issuedAtRaw);
@@ -156,7 +156,7 @@ function verifyMailUiSessionToken(token) {
   if ((Date.now() - issuedAt) > maxAgeMs) {
     return false;
   }
-  const payload = `${username}.${issuedAtRaw}.${nonce}`;
+  const payload = `${email}.${issuedAtRaw}.${nonce}`;
   const expected = crypto
     .createHmac('sha256', MAIL_UI_SESSION_SECRET)
     .update(payload)
@@ -635,7 +635,7 @@ const server = http.createServer((req, res) => {
       return writeJson(res, 200, {
         status: 'OK',
         authenticated: isMailUiAuthenticated(req),
-        username: isMailUiAuthEnabled() ? MAIL_UI_USERNAME : null,
+        email: isMailUiAuthEnabled() ? MAIL_UI_EMAIL : null,
       });
     }
 
@@ -656,24 +656,24 @@ const server = http.createServer((req, res) => {
       }
       return readJsonBody(req)
         .then((payload) => {
-          const username = String(payload.username || '').trim();
+          const email = String(payload.email || '').trim();
           const password = String(payload.password || '').trim();
-          const validUser = timingSafeCompare(username, MAIL_UI_USERNAME);
+          const validEmail = timingSafeCompare(email, MAIL_UI_EMAIL);
           const validPass = timingSafeCompare(password, MAIL_UI_PASSWORD);
-          if (!validUser || !validPass) {
+          if (!validEmail || !validPass) {
             writeJson(res, 401, {
               status: 'UNAUTHORIZED',
-              message: 'Invalid username or password',
+              message: 'Invalid email or password',
             });
             return;
           }
 
-          const token = buildMailUiSessionToken(MAIL_UI_USERNAME);
+          const token = buildMailUiSessionToken(MAIL_UI_EMAIL);
           setMailUiSessionCookie(req, res, token);
           writeJson(res, 200, {
             status: 'OK',
             authenticated: true,
-            username: MAIL_UI_USERNAME,
+            email: MAIL_UI_EMAIL,
           });
         })
         .catch((error) => {

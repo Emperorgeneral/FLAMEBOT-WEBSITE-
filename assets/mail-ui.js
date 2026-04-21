@@ -9,7 +9,7 @@ const elements = {
   appShell: document.getElementById('mail-app-shell'),
   loginForm: document.getElementById('mail-login-form'),
   loginSubmit: document.getElementById('mail-login-submit'),
-  loginUsername: document.getElementById('mail-login-username'),
+  loginEmail: document.getElementById('mail-login-email'),
   loginPassword: document.getElementById('mail-login-password'),
   logoutButton: document.getElementById('mail-logout'),
 
@@ -108,7 +108,7 @@ async function handleLogin(event) {
   setBusy(elements.loginSubmit, true, 'Sign in', 'Signing in...');
   try {
     const payload = {
-      username: elements.loginUsername.value.trim(),
+      email: elements.loginEmail.value.trim(),
       password: elements.loginPassword.value,
     };
     await request('/auth/login', { method: 'POST', body: payload });
