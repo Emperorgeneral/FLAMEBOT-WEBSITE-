@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; form-action 'self'; upgrade-insecure-requests" />
+  <meta name="referrer" content="no-referrer" />
+  <title>FlameBot Mail Console</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="/assets/icon.ico" sizes="any" />
+  <link rel="icon" type="image/png" href="/assets/icon.png" />
+  <link rel="stylesheet" href="/assets/mail-ui.css?v=20260421a" />
+</head>
+<body>
+  <div class="bgGlow" aria-hidden="true"></div>
+  <main class="pageShell">
+    <header class="hero panel">
+      <a class="brand" href="/">
+        <img src="/assets/logo.png" alt="FlameBot" />
+        <span>FlameBot</span>
+      </a>
+      <div>
+        <p class="tag">Operations</p>
+        <h1>Mail Console</h1>
+        <p class="hint">Send single messages, run controlled bulk sends, and review delivery history.</p>
+      </div>
+      <button id="refresh-history" class="ghostButton" type="button">Refresh history</button>
+    </header>
+
+    <section class="gridTwo">
+      <article class="panel">
+        <div class="panelHead">
+          <p class="tag">Single Send</p>
+          <h2>Compose Email</h2>
+        </div>
+        <form id="single-send-form" class="stackForm">
+          <label>
+            <span>Recipient</span>
+            <input id="single-to" type="email" placeholder="recipient@gmail.com" required />
+          </label>
+          <label>
+            <span>Subject</span>
+            <input id="single-subject" type="text" maxlength="300" required />
+          </label>
+          <label>
+            <span>Plain text body</span>
+            <textarea id="single-text" rows="5" placeholder="Write your message" required></textarea>
+          </label>
+          <label>
+            <span>Reply-To (optional)</span>
+            <input id="single-reply-to" type="email" placeholder="flamecoretechnology@flamebotapp.com" />
+          </label>
+          <label>
+            <span>Unsubscribe email (optional)</span>
+            <input id="single-unsub-email" type="email" placeholder="flamecoretechnology@flamebotapp.com" />
+          </label>
+          <label>
+            <span>Unsubscribe URL (optional)</span>
+            <input id="single-unsub-url" type="url" placeholder="https://flamebotapp.com/unsubscribe" />
+          </label>
+          <button class="primaryButton" id="single-submit" type="submit">Send email</button>
+        </form>
+      </article>
+
+      <article class="panel">
+        <div class="panelHead">
+          <p class="tag">Bulk Send</p>
+          <h2>Campaign Batch</h2>
+        </div>
+        <form id="bulk-send-form" class="stackForm">
+          <label>
+            <span>Recipients (one email per line)</span>
+            <textarea id="bulk-recipients" rows="6" placeholder="user1@gmail.com&#10;user2@gmail.com" required></textarea>
+          </label>
+          <label>
+            <span>Subject</span>
+            <input id="bulk-subject" type="text" maxlength="300" required />
+          </label>
+          <label>
+            <span>Plain text body</span>
+            <textarea id="bulk-text" rows="5" placeholder="Campaign body" required></textarea>
+          </label>
+          <label>
+            <span>Reply-To (optional)</span>
+            <input id="bulk-reply-to" type="email" placeholder="flamecoretechnology@flamebotapp.com" />
+          </label>
+          <label>
+            <span>Unsubscribe email (optional)</span>
+            <input id="bulk-unsub-email" type="email" placeholder="flamecoretechnology@flamebotapp.com" />
+          </label>
+          <label>
+            <span>Unsubscribe URL (optional)</span>
+            <input id="bulk-unsub-url" type="url" placeholder="https://flamebotapp.com/unsubscribe" />
+          </label>
+          <button class="primaryButton" id="bulk-submit" type="submit">Send batch</button>
+        </form>
+      </article>
+    </section>
+
+    <section class="panel tablePanel">
+      <div class="panelHead split">
+        <div>
+          <p class="tag">Tracking</p>
+          <h2>Latest Messages</h2>
+        </div>
+        <p class="hint" id="history-meta">Loading history...</p>
+      </div>
+      <div class="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Created</th>
+              <th>Status</th>
+              <th>To</th>
+              <th>Subject</th>
+              <th>From</th>
+              <th>Error</th>
+            </tr>
+          </thead>
+          <tbody id="history-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" hidden></div>
+  <script src="/assets/mail-ui.js?v=20260421a" defer></script>
+</body>
+</html>

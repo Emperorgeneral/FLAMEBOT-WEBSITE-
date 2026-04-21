@@ -21,6 +21,12 @@ const BACKEND_BASE_URL = String(
   || process.env.BACKEND_URL
   || ''
 ).trim().replace(/\/+$/, '');
+const EMAIL_API_BASE_URL = String(
+  process.env.FLAMEBOT_EMAIL_API_BASE_URL
+  || process.env.EMAIL_API_BASE_URL
+  || ''
+).trim().replace(/\/+$/, '');
+const EMAIL_API_KEY = String(process.env.FLAMEBOT_EMAIL_API_KEY || '').trim();
 const WEBSITE_ANALYTICS_SECRET = String(process.env.FLAMEBOT_WEBSITE_ANALYTICS_SECRET || '').trim();
 const COOKIE_PREFERENCES_NAME = 'flamebot_cookie_preferences';
 
@@ -206,6 +212,85 @@ function proxyBackendRequest(req, res, upstreamPath) {
       writeJson(res, 502, {
         status: 'ERROR',
         message: 'Unable to reach backend service',
+      });
+    } else {
+      res.end();
+    }
+  });
+
+  req.pipe(proxyReq);
+}
+
+function proxyEmailApiRequest(req, res, upstreamPath) {
+  if (!EMAIL_API_BASE_URL) {
+    return writeJson(res, 503, {
+      status: 'ERROR',
+      message: 'Email API base URL is not configured on the website service',
+    });
+  }
+
+  if (!EMAIL_API_KEY) {
+    return writeJson(res, 503, {
+      status: 'ERROR',
+      message: 'Email API key is not configured on the website service',
+    });
+  }
+
+  let targetUrl;
+  try {
+    targetUrl = new URL(upstreamPath, `${EMAIL_API_BASE_URL}/`);
+  } catch (_error) {
+    return writeJson(res, 500, {
+      status: 'ERROR',
+      message: 'Invalid email API URL configuration',
+    });
+  }
+
+  const client = targetUrl.protocol === 'https:' ? https : http;
+  const headers = {
+    accept: req.headers.accept || 'application/json',
+    'content-type': req.headers['content-type'] || 'application/json; charset=utf-8',
+    'user-agent': req.headers['user-agent'] || 'flamebot-website-email-proxy',
+    'x-api-key': EMAIL_API_KEY,
+    'x-forwarded-for': req.socket.remoteAddress || '',
+  };
+  if (req.headers['x-request-id']) {
+    headers['x-request-id'] = req.headers['x-request-id'];
+  }
+
+  const proxyReq = client.request(
+    {
+      protocol: targetUrl.protocol,
+      hostname: targetUrl.hostname,
+      port: targetUrl.port || undefined,
+      method: req.method,
+      path: `${targetUrl.pathname}${targetUrl.search}`,
+      headers,
+    },
+    (proxyRes) => {
+      res.statusCode = proxyRes.statusCode || 502;
+      res.setHeader('Cache-Control', 'no-store');
+
+      for (const [headerName, headerValue] of Object.entries(proxyRes.headers)) {
+        if (!headerValue) {
+          continue;
+        }
+        const lower = headerName.toLowerCase();
+        if (['connection', 'keep-alive', 'transfer-encoding', 'content-length', 'content-encoding', 'host'].includes(lower)) {
+          continue;
+        }
+        res.setHeader(headerName, headerValue);
+      }
+
+      proxyRes.pipe(res);
+    }
+  );
+
+  proxyReq.on('error', () => {
+    if (!res.headersSent) {
+      writeJson(res, 502, {
+        status: 'ERROR',
+        message: 'Unable to reach email API service',
       });
     } else {
       res.end();
@@ -404,6 +489,13 @@ const server = http.createServer((req, res) => {
     const upstreamPath = pathname.replace('/api/backend', '') || '/';
     const queryText = parsed.search || '';
     proxyBackendRequest(req, res, `${upstreamPath}${queryText}`);
+    return;
+  }
+
+  if (pathname.startsWith('/api/email/')) {
+    const upstreamPath = pathname.replace('/api/email', '') || '/';
+    const queryText = parsed.search || '';
+    proxyEmailApiRequest(req, res, `${upstreamPath}${queryText}`);
     return;
   }
 
