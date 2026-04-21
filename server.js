@@ -137,11 +137,28 @@ function buildMailUiSessionToken(email) {
 }
 
 function verifyMailUiSessionToken(token) {
-  const parts = String(token || '').split('.');
-  if (parts.length !== 4) {
+  const raw = String(token || '');
+  const lastDot = raw.lastIndexOf('.');
+  if (lastDot <= 0) {
     return false;
   }
-  const [email, issuedAtRaw, nonce, signature] = parts;
+  const signature = raw.slice(lastDot + 1);
+  const withoutSignature = raw.slice(0, lastDot);
+
+  const secondLastDot = withoutSignature.lastIndexOf('.');
+  if (secondLastDot <= 0) {
+    return false;
+  }
+  const nonce = withoutSignature.slice(secondLastDot + 1);
+  const withoutNonce = withoutSignature.slice(0, secondLastDot);
+
+  const thirdLastDot = withoutNonce.lastIndexOf('.');
+  if (thirdLastDot <= 0) {
+    return false;
+  }
+  const issuedAtRaw = withoutNonce.slice(thirdLastDot + 1);
+  const email = withoutNonce.slice(0, thirdLastDot);
+
   if (!email || !issuedAtRaw || !nonce || !signature) {
     return false;
   }
