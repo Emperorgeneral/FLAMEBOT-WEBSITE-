@@ -13,7 +13,33 @@
 </head>
 <body>
   <div class="bgGlow" aria-hidden="true"></div>
-  <main class="pageShell">
+
+  <main class="pageShell authShell" id="mail-auth-shell" hidden>
+    <section class="panel authCard">
+      <a class="brand" href="/">
+        <img src="/assets/logo.png" alt="FlameBot" />
+        <span>FlameBot</span>
+      </a>
+      <div>
+        <p class="tag">Protected Console</p>
+        <h1>Sign in to Mail Console</h1>
+        <p class="hint">Use your private operator credentials to continue.</p>
+      </div>
+      <form id="mail-login-form" class="stackForm authForm" autocomplete="on">
+        <label>
+          <span>Username</span>
+          <input id="mail-login-username" type="text" autocomplete="username" required />
+        </label>
+        <label>
+          <span>Password</span>
+          <input id="mail-login-password" type="password" autocomplete="current-password" required />
+        </label>
+        <button class="primaryButton" id="mail-login-submit" type="submit">Sign in</button>
+      </form>
+    </section>
+  </main>
+
+  <main class="pageShell" id="mail-app-shell" hidden>
     <header class="hero panel">
       <a class="brand" href="/">
         <img src="/assets/logo.png" alt="FlameBot" />
@@ -24,7 +50,10 @@
         <h1>Mail Console</h1>
         <p class="hint">Send single messages, run controlled bulk sends, and review delivery history.</p>
       </div>
-      <button id="refresh-history" class="ghostButton" type="button">Refresh history</button>
+      <div class="heroActions">
+        <button id="refresh-history" class="ghostButton" type="button">Refresh history</button>
+        <button id="mail-logout" class="ghostButton" type="button">Log out</button>
+      </div>
     </header>
 
     <section class="gridTwo">

@@ -35,6 +35,21 @@ body {
   gap: 18px;
 }
 
+.authShell {
+  max-width: 560px;
+  min-height: calc(100vh - 40px);
+  align-content: center;
+}
+
+.authCard {
+  display: grid;
+  gap: 14px;
+}
+
+.authForm {
+  margin-top: 4px;
+}
+
 .panel {
   background: var(--panel);
   border: 1px solid var(--line);
@@ -49,6 +64,11 @@ body {
   align-items: center;
   gap: 16px;
   justify-content: space-between;
+}
+
+.heroActions {
+  display: inline-flex;
+  gap: 10px;
 }
 
 .brand {

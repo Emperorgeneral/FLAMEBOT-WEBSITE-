@@ -1,6 +1,18 @@
 const API_ROOT = '/api/email';
 
+const state = {
+  authenticated: false,
+};
+
 const elements = {
+  authShell: document.getElementById('mail-auth-shell'),
+  appShell: document.getElementById('mail-app-shell'),
+  loginForm: document.getElementById('mail-login-form'),
+  loginSubmit: document.getElementById('mail-login-submit'),
+  loginUsername: document.getElementById('mail-login-username'),
+  loginPassword: document.getElementById('mail-login-password'),
+  logoutButton: document.getElementById('mail-logout'),
+
   singleForm: document.getElementById('single-send-form'),
   singleSubmit: document.getElementById('single-submit'),
   singleTo: document.getElementById('single-to'),
@@ -40,6 +52,12 @@ function setBusy(button, busy, idleLabel, busyLabel) {
   button.textContent = busy ? busyLabel : idleLabel;
 }
 
+function renderAuthState() {
+  const authed = Boolean(state.authenticated);
+  elements.authShell.hidden = authed;
+  elements.appShell.hidden = !authed;
+}
+
 function escapeHtml(value) {
   return String(value ?? '')
     .replaceAll('&', '&amp;')
@@ -60,11 +78,61 @@ async function request(path, options = {}) {
   });
 
   const payload = await response.json().catch(() => ({ status: 'ERROR', message: 'Invalid response from API' }));
+  if (response.status === 401) {
+    state.authenticated = false;
+    renderAuthState();
+    throw new Error(payload?.message || 'Sign in required');
+  }
   if (!response.ok) {
     const message = payload && payload.message ? payload.message : `Request failed (${response.status})`;
     throw new Error(message);
   }
   return payload;
+}
+
+async function checkSession() {
+  const response = await fetch(`${API_ROOT}/auth/me`, {
+    method: 'GET',
+    headers: {
+      Accept: 'application/json',
+    },
+  });
+  const payload = await response.json().catch(() => ({}));
+  state.authenticated = Boolean(payload && payload.authenticated);
+  renderAuthState();
+  return state.authenticated;
+}
+
+async function handleLogin(event) {
+  event.preventDefault();
+  setBusy(elements.loginSubmit, true, 'Sign in', 'Signing in...');
+  try {
+    const payload = {
+      username: elements.loginUsername.value.trim(),
+      password: elements.loginPassword.value,
+    };
+    await request('/auth/login', { method: 'POST', body: payload });
+    state.authenticated = true;
+    elements.loginPassword.value = '';
+    renderAuthState();
+    showToast('Signed in successfully.');
+    await loadHistory();
+  } catch (error) {
+    showToast(error.message || 'Sign in failed', 'error');
+  } finally {
+    setBusy(elements.loginSubmit, false, 'Sign in', 'Signing in...');
+  }
+}
+
+async function handleLogout() {
+  try {
+    await request('/auth/logout', { method: 'POST', body: {} });
+  } catch (_error) {
+    // Ignore; force local logout state anyway.
+  }
+  state.authenticated = false;
+  renderAuthState();
+  showToast('Logged out.');
 }
 
 function normalizeOptional(value) {
@@ -110,6 +178,9 @@ function renderHistory(rows) {
 }
 
 async function loadHistory() {
+  if (!state.authenticated) {
+    return;
+  }
   elements.historyMeta.textContent = 'Loading history...';
   try {
     const rows = await request('/emails?limit=30');
@@ -185,10 +256,23 @@ async function handleBulkSend(event) {
 }
 
 function boot() {
+  renderAuthState();
+  elements.loginForm.addEventListener('submit', handleLogin);
+  elements.logoutButton.addEventListener('click', handleLogout);
   elements.singleForm.addEventListener('submit', handleSingleSend);
   elements.bulkForm.addEventListener('submit', handleBulkSend);
   elements.refreshHistory.addEventListener('click', loadHistory);
-  loadHistory();
+  checkSession()
+    .then((authed) => {
+      if (authed) {
+        return loadHistory();
+      }
+      return null;
+    })
+    .catch(() => {
+      state.authenticated = false;
+      renderAuthState();
+    });
 }
 
 boot();

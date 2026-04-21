@@ -10,6 +10,7 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const url = require('url');
+const crypto = require('crypto');
 const zlib = require('zlib');
 
 const ROOT = __dirname;
@@ -27,6 +28,11 @@ const EMAIL_API_BASE_URL = String(
   || ''
 ).trim().replace(/\/+$/, '');
 const EMAIL_API_KEY = String(process.env.FLAMEBOT_EMAIL_API_KEY || '').trim();
+const MAIL_UI_USERNAME = String(process.env.FLAMEBOT_MAIL_UI_USERNAME || '').trim();
+const MAIL_UI_PASSWORD = String(process.env.FLAMEBOT_MAIL_UI_PASSWORD || '').trim();
+const MAIL_UI_SESSION_SECRET = String(process.env.FLAMEBOT_MAIL_UI_SESSION_SECRET || EMAIL_API_KEY).trim();
+const MAIL_UI_SESSION_COOKIE_NAME = 'flamebot_mail_session';
+const MAIL_UI_SESSION_TTL_SECONDS = Number(process.env.FLAMEBOT_MAIL_UI_SESSION_TTL_SECONDS || 60 * 60 * 12);
 const WEBSITE_ANALYTICS_SECRET = String(process.env.FLAMEBOT_WEBSITE_ANALYTICS_SECRET || '').trim();
 const COOKIE_PREFERENCES_NAME = 'flamebot_cookie_preferences';
 
@@ -76,6 +82,138 @@ function parseCookies(req) {
     }
     return cookies;
   }, {});
+}
+
+function readJsonBody(req, maxBytes = 65536) {
+  return new Promise((resolve, reject) => {
+    let body = '';
+    let received = 0;
+    req.on('data', (chunk) => {
+      received += chunk.length;
+      if (received > maxBytes) {
+        reject(new Error('Payload too large'));
+        req.destroy();
+        return;
+      }
+      body += chunk.toString('utf-8');
+    });
+    req.on('end', () => {
+      if (!body.trim()) {
+        resolve({});
+        return;
+      }
+      try {
+        resolve(JSON.parse(body));
+      } catch (_error) {
+        reject(new Error('Invalid JSON body'));
+      }
+    });
+    req.on('error', (error) => reject(error));
+  });
+}
+
+function isMailUiAuthEnabled() {
+  return Boolean(MAIL_UI_USERNAME && MAIL_UI_PASSWORD && MAIL_UI_SESSION_SECRET);
+}
+
+function timingSafeCompare(a, b) {
+  const aBuf = Buffer.from(String(a || ''), 'utf-8');
+  const bBuf = Buffer.from(String(b || ''), 'utf-8');
+  if (aBuf.length !== bBuf.length) {
+    return false;
+  }
+  return crypto.timingSafeEqual(aBuf, bBuf);
+}
+
+function buildMailUiSessionToken(username) {
+  const issuedAt = String(Date.now());
+  const nonce = crypto.randomBytes(16).toString('hex');
+  const payload = `${username}.${issuedAt}.${nonce}`;
+  const signature = crypto
+    .createHmac('sha256', MAIL_UI_SESSION_SECRET)
+    .update(payload)
+    .digest('hex');
+  return `${payload}.${signature}`;
+}
+
+function verifyMailUiSessionToken(token) {
+  const parts = String(token || '').split('.');
+  if (parts.length !== 4) {
+    return false;
+  }
+  const [username, issuedAtRaw, nonce, signature] = parts;
+  if (!username || !issuedAtRaw || !nonce || !signature) {
+    return false;
+  }
+  if (!timingSafeCompare(username, MAIL_UI_USERNAME)) {
+    return false;
+  }
+  const issuedAt = Number(issuedAtRaw);
+  if (!Number.isFinite(issuedAt)) {
+    return false;
+  }
+  const maxAgeMs = Math.max(60, MAIL_UI_SESSION_TTL_SECONDS) * 1000;
+  if ((Date.now() - issuedAt) > maxAgeMs) {
+    return false;
+  }
+  const payload = `${username}.${issuedAtRaw}.${nonce}`;
+  const expected = crypto
+    .createHmac('sha256', MAIL_UI_SESSION_SECRET)
+    .update(payload)
+    .digest('hex');
+  return timingSafeCompare(signature, expected);
+}
+
+function setMailUiSessionCookie(req, res, token) {
+  const forwardedProto = String(req.headers['x-forwarded-proto'] || '').toLowerCase();
+  const secure = forwardedProto === 'https';
+  const attributes = [
+    `${MAIL_UI_SESSION_COOKIE_NAME}=${encodeURIComponent(token)}`,
+    'Path=/',
+    'HttpOnly',
+    'SameSite=Lax',
+    `Max-Age=${Math.max(60, MAIL_UI_SESSION_TTL_SECONDS)}`,
+  ];
+  if (secure) {
+    attributes.push('Secure');
+  }
+  res.setHeader('Set-Cookie', attributes.join('; '));
+}
+
+function clearMailUiSessionCookie(req, res) {
+  const forwardedProto = String(req.headers['x-forwarded-proto'] || '').toLowerCase();
+  const secure = forwardedProto === 'https';
+  const attributes = [
+    `${MAIL_UI_SESSION_COOKIE_NAME}=`,
+    'Path=/',
+    'HttpOnly',
+    'SameSite=Lax',
+    'Max-Age=0',
+  ];
+  if (secure) {
+    attributes.push('Secure');
+  }
+  res.setHeader('Set-Cookie', attributes.join('; '));
+}
+
+function isMailUiAuthenticated(req) {
+  if (!isMailUiAuthEnabled()) {
+    return true;
+  }
+  const cookies = parseCookies(req);
+  const token = decodeURIComponent(String(cookies[MAIL_UI_SESSION_COOKIE_NAME] || ''));
+  return verifyMailUiSessionToken(token);
+}
+
+function requireMailUiAuth(req, res) {
+  if (isMailUiAuthenticated(req)) {
+    return true;
+  }
+  writeJson(res, 401, {
+    status: 'UNAUTHORIZED',
+    message: 'Sign in required',
+  });
+  return false;
 }
 
 function hasAnalyticsConsent(req) {
@@ -493,6 +631,63 @@ const server = http.createServer((req, res) => {
   }
 
   if (pathname.startsWith('/api/email/')) {
+    if (pathname === '/api/email/auth/me') {
+      return writeJson(res, 200, {
+        status: 'OK',
+        authenticated: isMailUiAuthenticated(req),
+        username: isMailUiAuthEnabled() ? MAIL_UI_USERNAME : null,
+      });
+    }
+
+    if (pathname === '/api/email/auth/logout' && String(req.method || '').toUpperCase() === 'POST') {
+      clearMailUiSessionCookie(req, res);
+      return writeJson(res, 200, {
+        status: 'OK',
+        message: 'Logged out',
+      });
+    }
+
+    if (pathname === '/api/email/auth/login' && String(req.method || '').toUpperCase() === 'POST') {
+      if (!isMailUiAuthEnabled()) {
+        return writeJson(res, 400, {
+          status: 'ERROR',
+          message: 'Mail UI auth is not configured on this server',
+        });
+      }
+      return readJsonBody(req)
+        .then((payload) => {
+          const username = String(payload.username || '').trim();
+          const password = String(payload.password || '').trim();
+          const validUser = timingSafeCompare(username, MAIL_UI_USERNAME);
+          const validPass = timingSafeCompare(password, MAIL_UI_PASSWORD);
+          if (!validUser || !validPass) {
+            writeJson(res, 401, {
+              status: 'UNAUTHORIZED',
+              message: 'Invalid username or password',
+            });
+            return;
+          }
+
+          const token = buildMailUiSessionToken(MAIL_UI_USERNAME);
+          setMailUiSessionCookie(req, res, token);
+          writeJson(res, 200, {
+            status: 'OK',
+            authenticated: true,
+            username: MAIL_UI_USERNAME,
+          });
+        })
+        .catch((error) => {
+          writeJson(res, 400, {
+            status: 'ERROR',
+            message: error.message || 'Invalid request body',
+          });
+        });
+    }
+
+    if (!requireMailUiAuth(req, res)) {
+      return;
+    }
+
     const upstreamPath = pathname.replace('/api/email', '') || '/';
     const queryText = parsed.search || '';
     proxyEmailApiRequest(req, res, `${upstreamPath}${queryText}`);
