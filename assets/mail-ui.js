@@ -211,7 +211,7 @@ async function loadRecipients() {
     return;
   }
   try {
-    const payload = await request('/emails/recipients?page=1&page_size=500');
+    const payload = await request('/emails/recipients?page=1&page_size=100');
     state.recipients = Array.isArray(payload.items) ? payload.items : [];
     renderSingleSearchResults();
     renderBulkRecipients();
