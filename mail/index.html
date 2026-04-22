@@ -9,7 +9,7 @@
   <meta name="robots" content="noindex, nofollow" />
   <link rel="icon" href="/assets/icon.ico" sizes="any" />
   <link rel="icon" type="image/png" href="/assets/icon.png" />
-  <link rel="stylesheet" href="/assets/mail-ui.css?v=20260422a" />
+  <link rel="stylesheet" href="/assets/mail-ui.css?v=20260422c" />
 </head>
 <body>
   <div class="bgGlow" aria-hidden="true"></div>
@@ -48,7 +48,7 @@
       <div>
         <p class="tag">Operations</p>
         <h1>Mail Console</h1>
-        <p class="hint">Professional operations hub for single send, bulk campaigns, sent tracking, and inbox workflows.</p>
+        <p class="hint">Thread-first inbox, lightweight compose flows, and one continuous history for every sender.</p>
       </div>
       <div class="heroActions">
         <button id="refresh-history" class="ghostButton" type="button">Refresh</button>
@@ -56,175 +56,175 @@
       </div>
     </header>
 
-    <section class="gridTwo">
-      <article class="panel">
-        <div class="panelHead">
-          <p class="tag">Single Send</p>
-          <h2>Compose Email</h2>
-          <p class="hint">Search saved recipients by name or email, then send instantly.</p>
+    <section class="workspace">
+      <aside class="panel modeRail">
+        <div>
+          <p class="tag">Workflow</p>
+          <h2>Mail Desk</h2>
+          <p class="hint">Choose how you want to work, then stay inside the same minimal layout.</p>
         </div>
-        <form id="single-send-form" class="stackForm">
-          <label>
-            <span>Find recipient</span>
-            <input id="single-search" type="text" placeholder="Search by name or email" />
-          </label>
-          <div id="single-search-results" class="recipientResults" aria-live="polite"></div>
-          <label>
-            <span>Recipient email</span>
-            <input id="single-to" type="email" placeholder="recipient@gmail.com" required />
-          </label>
-          <label>
-            <span>Subject</span>
-            <input id="single-subject" type="text" maxlength="300" required />
-          </label>
-          <label>
-            <span>Plain text body</span>
-            <textarea id="single-text" rows="5" placeholder="Write your message" required></textarea>
-          </label>
-          <label>
-            <span>Reply-To (optional)</span>
-            <input id="single-reply-to" type="email" placeholder="flamecoretechnology@flamebotapp.com" />
-          </label>
-          <label>
-            <span>Unsubscribe email (optional)</span>
-            <input id="single-unsub-email" type="email" placeholder="flamecoretechnology@flamebotapp.com" />
-          </label>
-          <label>
-            <span>Unsubscribe URL (optional)</span>
-            <input id="single-unsub-url" type="url" placeholder="https://flamebotapp.com/unsubscribe" />
-          </label>
-          <button class="primaryButton" id="single-submit" type="submit">Send email</button>
-        </form>
-      </article>
 
-      <article class="panel">
-        <div class="panelHead">
-          <p class="tag">Bulk Send</p>
-          <h2>Campaign Batch</h2>
-          <p class="hint">Select recipients from saved emails with checkbox controls.</p>
+        <div class="modeButtons">
+          <button id="nav-inbox" type="button" class="modeButton active" data-view="inbox">
+            <span>Inbox</span>
+            <span id="nav-inbox-badge" class="railBadge" hidden>0</span>
+          </button>
+          <button id="nav-single" type="button" class="modeButton" data-view="single">Single email</button>
+          <button id="nav-bulk" type="button" class="modeButton" data-view="bulk">Bulk email</button>
         </div>
-        <form id="bulk-send-form" class="stackForm">
-          <div class="recipientPicker">
-            <div class="pickerToolbar">
-              <label class="inlineField">
-                <span>Search recipients</span>
-                <input id="bulk-recipient-search" type="text" placeholder="Filter recipients" />
-              </label>
-              <div class="pickerActions">
-                <button id="bulk-select-all" class="ghostButton" type="button">Select all shown</button>
-                <button id="bulk-clear-all" class="ghostButton" type="button">Clear</button>
+
+        <div class="railStats">
+          <div>
+            <span class="tag">Recipients</span>
+            <strong id="rail-recipient-count">0</strong>
+          </div>
+          <div>
+            <span class="tag">Threads</span>
+            <strong id="rail-thread-count">0</strong>
+          </div>
+        </div>
+      </aside>
+
+      <section class="panel listPanel">
+        <div class="panelHead listHead">
+          <div>
+            <p class="tag" id="list-tag">Inbox</p>
+            <h2 id="list-title">Conversation Threads</h2>
+          </div>
+          <p class="hint" id="list-hint">Every sender stays inside one continuous conversation.</p>
+        </div>
+
+        <div id="thread-tools" class="toolbar">
+          <input id="thread-search" type="text" placeholder="Search sender, subject, or message text" />
+          <button id="thread-search-btn" class="ghostButton" type="button">Search</button>
+        </div>
+
+        <div id="single-tools" class="toolbar" hidden>
+          <input id="single-recipient-search" type="text" placeholder="Search recipient by name or email" />
+          <select id="single-recipient-source">
+            <option value="all">All categories</option>
+            <option value="profile">Profile</option>
+            <option value="history">History</option>
+            <option value="inbox">Inbox</option>
+          </select>
+        </div>
+
+        <div id="bulk-tools" class="toolbar" hidden>
+          <input id="bulk-recipient-search" type="text" placeholder="Search recipients for a campaign" />
+          <select id="bulk-recipient-source">
+            <option value="all">All categories</option>
+            <option value="profile">Profile</option>
+            <option value="history">History</option>
+            <option value="inbox">Inbox</option>
+          </select>
+          <div class="toolbarActions">
+            <button id="bulk-select-all" class="ghostButton" type="button">Select shown</button>
+            <button id="bulk-clear-all" class="ghostButton" type="button">Clear</button>
+          </div>
+        </div>
+
+        <div id="list-content" class="listContent"></div>
+      </section>
+
+      <section class="panel conversationPanel">
+        <section id="inbox-view" class="conversationView">
+          <div id="thread-empty" class="emptyState">
+            <p class="tag">Inbox</p>
+            <h3>Select a thread</h3>
+            <p class="hint">Open any sender from the middle column to see the full back-and-forth in one place.</p>
+          </div>
+
+          <div id="thread-shell" hidden>
+            <div class="threadHero">
+              <div>
+                <p class="tag">Conversation</p>
+                <h2 id="thread-title">-</h2>
+                <p class="hint" id="thread-meta">-</p>
               </div>
             </div>
-            <div id="bulk-recipient-list" class="recipientList" aria-live="polite"></div>
-            <p id="bulk-selected-meta" class="hint">0 recipients selected</p>
+            <div id="thread-stream" class="chatStream"></div>
+            <form id="thread-reply-form" class="composer stackForm">
+              <label>
+                <span>Reply subject</span>
+                <input id="thread-reply-subject" type="text" maxlength="300" required />
+              </label>
+              <label>
+                <span>Reply body</span>
+                <textarea id="thread-reply-text" rows="5" placeholder="Write a reply" required></textarea>
+              </label>
+              <button id="thread-reply-submit" class="primaryButton" type="submit">Send reply</button>
+            </form>
           </div>
-          <label>
-            <span>Subject</span>
-            <input id="bulk-subject" type="text" maxlength="300" required />
-          </label>
-          <label>
-            <span>Plain text body</span>
-            <textarea id="bulk-text" rows="5" placeholder="Campaign body" required></textarea>
-          </label>
-          <label>
-            <span>Reply-To (optional)</span>
-            <input id="bulk-reply-to" type="email" placeholder="flamecoretechnology@flamebotapp.com" />
-          </label>
-          <label>
-            <span>Unsubscribe email (optional)</span>
-            <input id="bulk-unsub-email" type="email" placeholder="flamecoretechnology@flamebotapp.com" />
-          </label>
-          <label>
-            <span>Unsubscribe URL (optional)</span>
-            <input id="bulk-unsub-url" type="url" placeholder="https://flamebotapp.com/unsubscribe" />
-          </label>
-          <button class="primaryButton" id="bulk-submit" type="submit">Send batch</button>
-        </form>
-      </article>
-    </section>
+        </section>
 
-    <section class="panel tablePanel">
-      <div class="panelHead split">
-        <div>
-          <p class="tag">Tracking</p>
-          <h2>Message Center</h2>
-        </div>
-        <p class="hint" id="history-meta">Loading...</p>
-      </div>
-
-      <div class="centerToolbar">
-        <div class="tabButtons" role="tablist" aria-label="Message views">
-          <button id="tab-sent" type="button" class="tabButton active" data-tab="sent" role="tab" aria-selected="true">Sent</button>
-          <button id="tab-inbox" type="button" class="tabButton" data-tab="inbox" role="tab" aria-selected="false">Inbox</button>
-        </div>
-        <div class="searchRow">
-          <input id="history-search" type="text" placeholder="Search keyword, subject, sender" />
-          <input id="history-sender" type="text" placeholder="Sender filter" />
-          <button id="history-search-btn" class="ghostButton" type="button">Search</button>
-        </div>
-      </div>
-
-      <div class="tableWrap">
-        <table>
-          <thead>
-            <tr id="history-head-sent">
-              <th>Created</th>
-              <th>Status</th>
-              <th>To</th>
-              <th>Subject</th>
-              <th>From</th>
-              <th>Error</th>
-            </tr>
-            <tr id="history-head-inbox" hidden>
-              <th>Received</th>
-              <th>From</th>
-              <th>To</th>
-              <th>Subject</th>
-              <th>Snippet</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="history-body"></tbody>
-        </table>
-      </div>
-
-      <div class="pager">
-        <button id="history-prev" class="ghostButton" type="button">Previous</button>
-        <p id="history-page-meta" class="hint">Page 1</p>
-        <button id="history-next" class="ghostButton" type="button">Next</button>
-      </div>
-
-      <section id="message-detail" class="detailCard" hidden>
-        <div class="panelHead split">
-          <div>
-            <p class="tag">Message Detail</p>
-            <h3 id="detail-subject">-</h3>
+        <section id="single-view" class="conversationView" hidden>
+          <div class="threadHero">
+            <div>
+              <p class="tag">Single Send</p>
+              <h2 id="single-selected-title">Choose a recipient</h2>
+              <p class="hint" id="single-selected-meta">Search the directory, select one email, then send inside the same conversation history.</p>
+            </div>
           </div>
-          <button id="detail-close" class="ghostButton" type="button">Close</button>
-        </div>
-        <div class="detailMeta">
-          <p><strong>From:</strong> <span id="detail-from">-</span></p>
-          <p><strong>To:</strong> <span id="detail-to">-</span></p>
-          <p><strong>Date:</strong> <span id="detail-date">-</span></p>
-        </div>
-        <article id="detail-body" class="detailBody"></article>
-        <form id="reply-form" class="stackForm" hidden>
-          <p class="tag">Quick Reply</p>
-          <label>
-            <span>Reply subject</span>
-            <input id="reply-subject" type="text" maxlength="300" required />
-          </label>
-          <label>
-            <span>Reply body</span>
-            <textarea id="reply-text" rows="5" required></textarea>
-          </label>
-          <button id="reply-submit" class="primaryButton" type="submit">Send Reply</button>
-        </form>
+
+          <form id="single-send-form" class="composer stackForm">
+            <label>
+              <span>Subject</span>
+              <input id="single-subject" type="text" maxlength="300" required />
+            </label>
+            <label>
+              <span>Message</span>
+              <textarea id="single-text" rows="6" placeholder="Write your message" required></textarea>
+            </label>
+            <label>
+              <span>Reply-To (optional)</span>
+              <input id="single-reply-to" type="email" placeholder="flamecoretechnology@flamebotapp.com" />
+            </label>
+            <button class="primaryButton" id="single-submit" type="submit">Send email</button>
+          </form>
+
+          <div class="previewBlock">
+            <div class="panelHead compactHead">
+              <div>
+                <p class="tag">Conversation Preview</p>
+                <h3>Recent exchange</h3>
+              </div>
+            </div>
+            <div id="single-thread-stream" class="chatStream compact"></div>
+          </div>
+        </section>
+
+        <section id="bulk-view" class="conversationView" hidden>
+          <div class="threadHero">
+            <div>
+              <p class="tag">Bulk Send</p>
+              <h2>Campaign Batch</h2>
+              <p class="hint" id="bulk-selected-meta">0 recipients selected</p>
+            </div>
+          </div>
+
+          <div id="bulk-selection-summary" class="selectionSummary"></div>
+
+          <form id="bulk-send-form" class="composer stackForm">
+            <label>
+              <span>Subject</span>
+              <input id="bulk-subject" type="text" maxlength="300" required />
+            </label>
+            <label>
+              <span>Message</span>
+              <textarea id="bulk-text" rows="6" placeholder="Write your campaign body" required></textarea>
+            </label>
+            <label>
+              <span>Reply-To (optional)</span>
+              <input id="bulk-reply-to" type="email" placeholder="flamecoretechnology@flamebotapp.com" />
+            </label>
+            <button class="primaryButton" id="bulk-submit" type="submit">Send batch</button>
+          </form>
+        </section>
       </section>
     </section>
   </main>
 
   <div id="toast" class="toast" hidden></div>
-  <script src="/assets/mail-ui.js?v=20260422a" defer></script>
+  <script src="/assets/mail-ui.js?v=20260422c" defer></script>
 </body>
 </html>
