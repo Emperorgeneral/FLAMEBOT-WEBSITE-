@@ -9,7 +9,7 @@
   <meta name="robots" content="noindex, nofollow" />
   <link rel="icon" href="/assets/icon.ico" sizes="any" />
   <link rel="icon" type="image/png" href="/assets/icon.png" />
-  <link rel="stylesheet" href="/assets/mail-ui.css?v=20260421a" />
+  <link rel="stylesheet" href="/assets/mail-ui.css?v=20260422a" />
 </head>
 <body>
   <div class="bgGlow" aria-hidden="true"></div>
@@ -48,10 +48,10 @@
       <div>
         <p class="tag">Operations</p>
         <h1>Mail Console</h1>
-        <p class="hint">Send single messages, run controlled bulk sends, and review delivery history.</p>
+        <p class="hint">Professional operations hub for single send, bulk campaigns, sent tracking, and inbox workflows.</p>
       </div>
       <div class="heroActions">
-        <button id="refresh-history" class="ghostButton" type="button">Refresh history</button>
+        <button id="refresh-history" class="ghostButton" type="button">Refresh</button>
         <button id="mail-logout" class="ghostButton" type="button">Log out</button>
       </div>
     </header>
@@ -61,10 +61,16 @@
         <div class="panelHead">
           <p class="tag">Single Send</p>
           <h2>Compose Email</h2>
+          <p class="hint">Search saved recipients by name or email, then send instantly.</p>
         </div>
         <form id="single-send-form" class="stackForm">
           <label>
-            <span>Recipient</span>
+            <span>Find recipient</span>
+            <input id="single-search" type="text" placeholder="Search by name or email" />
+          </label>
+          <div id="single-search-results" class="recipientResults" aria-live="polite"></div>
+          <label>
+            <span>Recipient email</span>
             <input id="single-to" type="email" placeholder="recipient@gmail.com" required />
           </label>
           <label>
@@ -95,12 +101,23 @@
         <div class="panelHead">
           <p class="tag">Bulk Send</p>
           <h2>Campaign Batch</h2>
+          <p class="hint">Select recipients from saved emails with checkbox controls.</p>
         </div>
         <form id="bulk-send-form" class="stackForm">
-          <label>
-            <span>Recipients (one email per line)</span>
-            <textarea id="bulk-recipients" rows="6" placeholder="user1@gmail.com&#10;user2@gmail.com" required></textarea>
-          </label>
+          <div class="recipientPicker">
+            <div class="pickerToolbar">
+              <label class="inlineField">
+                <span>Search recipients</span>
+                <input id="bulk-recipient-search" type="text" placeholder="Filter recipients" />
+              </label>
+              <div class="pickerActions">
+                <button id="bulk-select-all" class="ghostButton" type="button">Select all shown</button>
+                <button id="bulk-clear-all" class="ghostButton" type="button">Clear</button>
+              </div>
+            </div>
+            <div id="bulk-recipient-list" class="recipientList" aria-live="polite"></div>
+            <p id="bulk-selected-meta" class="hint">0 recipients selected</p>
+          </div>
           <label>
             <span>Subject</span>
             <input id="bulk-subject" type="text" maxlength="300" required />
@@ -130,14 +147,27 @@
       <div class="panelHead split">
         <div>
           <p class="tag">Tracking</p>
-          <h2>Latest Messages</h2>
+          <h2>Message Center</h2>
         </div>
-        <p class="hint" id="history-meta">Loading history...</p>
+        <p class="hint" id="history-meta">Loading...</p>
       </div>
+
+      <div class="centerToolbar">
+        <div class="tabButtons" role="tablist" aria-label="Message views">
+          <button id="tab-sent" type="button" class="tabButton active" data-tab="sent" role="tab" aria-selected="true">Sent</button>
+          <button id="tab-inbox" type="button" class="tabButton" data-tab="inbox" role="tab" aria-selected="false">Inbox</button>
+        </div>
+        <div class="searchRow">
+          <input id="history-search" type="text" placeholder="Search keyword, subject, sender" />
+          <input id="history-sender" type="text" placeholder="Sender filter" />
+          <button id="history-search-btn" class="ghostButton" type="button">Search</button>
+        </div>
+      </div>
+
       <div class="tableWrap">
         <table>
           <thead>
-            <tr>
+            <tr id="history-head-sent">
               <th>Created</th>
               <th>Status</th>
               <th>To</th>
@@ -145,14 +175,56 @@
               <th>From</th>
               <th>Error</th>
             </tr>
+            <tr id="history-head-inbox" hidden>
+              <th>Received</th>
+              <th>From</th>
+              <th>To</th>
+              <th>Subject</th>
+              <th>Snippet</th>
+              <th>Action</th>
+            </tr>
           </thead>
           <tbody id="history-body"></tbody>
         </table>
       </div>
+
+      <div class="pager">
+        <button id="history-prev" class="ghostButton" type="button">Previous</button>
+        <p id="history-page-meta" class="hint">Page 1</p>
+        <button id="history-next" class="ghostButton" type="button">Next</button>
+      </div>
+
+      <section id="message-detail" class="detailCard" hidden>
+        <div class="panelHead split">
+          <div>
+            <p class="tag">Message Detail</p>
+            <h3 id="detail-subject">-</h3>
+          </div>
+          <button id="detail-close" class="ghostButton" type="button">Close</button>
+        </div>
+        <div class="detailMeta">
+          <p><strong>From:</strong> <span id="detail-from">-</span></p>
+          <p><strong>To:</strong> <span id="detail-to">-</span></p>
+          <p><strong>Date:</strong> <span id="detail-date">-</span></p>
+        </div>
+        <article id="detail-body" class="detailBody"></article>
+        <form id="reply-form" class="stackForm" hidden>
+          <p class="tag">Quick Reply</p>
+          <label>
+            <span>Reply subject</span>
+            <input id="reply-subject" type="text" maxlength="300" required />
+          </label>
+          <label>
+            <span>Reply body</span>
+            <textarea id="reply-text" rows="5" required></textarea>
+          </label>
+          <button id="reply-submit" class="primaryButton" type="submit">Send Reply</button>
+        </form>
+      </section>
     </section>
   </main>
 
   <div id="toast" class="toast" hidden></div>
-  <script src="/assets/mail-ui.js?v=20260421b" defer></script>
+  <script src="/assets/mail-ui.js?v=20260422a" defer></script>
 </body>
 </html>
