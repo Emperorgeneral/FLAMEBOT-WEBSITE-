@@ -9,7 +9,7 @@
   <meta name="robots" content="noindex, nofollow" />
   <link rel="icon" href="/assets/icon.ico" sizes="any" />
   <link rel="icon" type="image/png" href="/assets/icon.png" />
-  <link rel="stylesheet" href="/assets/mail-ui.css?v=20260422c" />
+  <link rel="stylesheet" href="/assets/mail-ui.css?v=20260422d" />
 </head>
 <body>
   <div class="bgGlow" aria-hidden="true"></div>
@@ -65,12 +65,12 @@
         </div>
 
         <div class="modeButtons">
-          <button id="nav-inbox" type="button" class="modeButton active" data-view="inbox">
+          <button id="nav-inbox" type="button" class="modeButton active" data-page="inbox">
             <span>Inbox</span>
             <span id="nav-inbox-badge" class="railBadge" hidden>0</span>
           </button>
-          <button id="nav-single" type="button" class="modeButton" data-view="single">Single email</button>
-          <button id="nav-bulk" type="button" class="modeButton" data-view="bulk">Bulk email</button>
+          <button id="nav-single" type="button" class="modeButton" data-page="single">Single email</button>
+          <button id="nav-bulk" type="button" class="modeButton" data-page="bulk">Bulk email</button>
         </div>
 
         <div class="railStats">
@@ -85,87 +85,73 @@
         </div>
       </aside>
 
-      <section class="panel listPanel">
-        <div class="panelHead listHead">
-          <div>
-            <p class="tag" id="list-tag">Inbox</p>
-            <h2 id="list-title">Conversation Threads</h2>
-          </div>
-          <p class="hint" id="list-hint">Every sender stays inside one continuous conversation.</p>
-        </div>
-
-        <div id="thread-tools" class="toolbar">
-          <input id="thread-search" type="text" placeholder="Search sender, subject, or message text" />
-          <button id="thread-search-btn" class="ghostButton" type="button">Search</button>
-        </div>
-
-        <div id="single-tools" class="toolbar" hidden>
-          <input id="single-recipient-search" type="text" placeholder="Search recipient by name or email" />
-          <select id="single-recipient-source">
-            <option value="all">All categories</option>
-            <option value="profile">Profile</option>
-            <option value="history">History</option>
-            <option value="inbox">Inbox</option>
-          </select>
-        </div>
-
-        <div id="bulk-tools" class="toolbar" hidden>
-          <input id="bulk-recipient-search" type="text" placeholder="Search recipients for a campaign" />
-          <select id="bulk-recipient-source">
-            <option value="all">All categories</option>
-            <option value="profile">Profile</option>
-            <option value="history">History</option>
-            <option value="inbox">Inbox</option>
-          </select>
-          <div class="toolbarActions">
-            <button id="bulk-select-all" class="ghostButton" type="button">Select shown</button>
-            <button id="bulk-clear-all" class="ghostButton" type="button">Clear</button>
-          </div>
-        </div>
-
-        <div id="list-content" class="listContent"></div>
-      </section>
-
-      <section class="panel conversationPanel">
-        <section id="inbox-view" class="conversationView">
-          <div id="thread-empty" class="emptyState">
-            <p class="tag">Inbox</p>
-            <h3>Select a thread</h3>
-            <p class="hint">Open any sender from the middle column to see the full back-and-forth in one place.</p>
-          </div>
-
-          <div id="thread-shell" hidden>
-            <div class="threadHero">
-              <div>
-                <p class="tag">Conversation</p>
-                <h2 id="thread-title">-</h2>
-                <p class="hint" id="thread-meta">-</p>
-              </div>
+      <section class="panel pagePanel">
+        <section id="page-inbox" class="pageView">
+          <div class="panelHead split">
+            <div>
+              <p class="tag">Inbox</p>
+              <h2>All Senders</h2>
+              <p class="hint">One sender = one thread. Open any sender to view the full conversation page.</p>
             </div>
-            <div id="thread-stream" class="chatStream"></div>
-            <form id="thread-reply-form" class="composer stackForm">
-              <label>
-                <span>Reply subject</span>
-                <input id="thread-reply-subject" type="text" maxlength="300" required />
-              </label>
-              <label>
-                <span>Reply body</span>
-                <textarea id="thread-reply-text" rows="5" placeholder="Write a reply" required></textarea>
-              </label>
-              <button id="thread-reply-submit" class="primaryButton" type="submit">Send reply</button>
-            </form>
           </div>
+          <div class="toolbar inboxToolbar">
+            <input id="inbox-search" type="text" placeholder="Search sender, subject, or message" />
+            <button id="inbox-search-btn" class="ghostButton" type="button">Search</button>
+          </div>
+          <div id="inbox-thread-list" class="threadGrid"></div>
         </section>
 
-        <section id="single-view" class="conversationView" hidden>
+        <section id="page-thread" class="pageView" hidden>
+          <div class="threadTopBar">
+            <button id="thread-back" class="ghostButton" type="button">Back to inbox</button>
+            <p class="hint">Dedicated conversation page</p>
+          </div>
           <div class="threadHero">
             <div>
-              <p class="tag">Single Send</p>
-              <h2 id="single-selected-title">Choose a recipient</h2>
-              <p class="hint" id="single-selected-meta">Search the directory, select one email, then send inside the same conversation history.</p>
+              <p class="tag">Conversation</p>
+              <h2 id="thread-title">-</h2>
+              <p class="hint" id="thread-meta">-</p>
             </div>
           </div>
+          <div id="thread-stream" class="chatStream"></div>
+          <form id="thread-reply-form" class="composer stackForm">
+            <label>
+              <span>Reply subject</span>
+              <input id="thread-reply-subject" type="text" maxlength="300" required />
+            </label>
+            <label>
+              <span>Reply body</span>
+              <textarea id="thread-reply-text" rows="5" placeholder="Write a reply" required></textarea>
+            </label>
+            <button id="thread-reply-submit" class="primaryButton" type="submit">Send reply</button>
+          </form>
+        </section>
 
+        <section id="page-single" class="pageView" hidden>
+          <div class="panelHead split">
+            <div>
+              <p class="tag">Single Send</p>
+              <h2>Recipient Selection</h2>
+              <p class="hint">Choose one recipient, then send from a focused compose page.</p>
+            </div>
+          </div>
+          <div class="toolbar">
+            <input id="single-recipient-search" type="text" placeholder="Search recipient by name or email" />
+            <select id="single-recipient-source">
+              <option value="all">All categories</option>
+              <option value="profile">Profile</option>
+              <option value="history">History</option>
+              <option value="inbox">Inbox</option>
+            </select>
+          </div>
+          <div id="single-recipient-list" class="recipientGrid"></div>
+          <div class="threadHero compact">
+            <div>
+              <p class="tag">Selected Recipient</p>
+              <h3 id="single-selected-title">Choose a recipient</h3>
+              <p class="hint" id="single-selected-meta">Recipient details show here.</p>
+            </div>
+          </div>
           <form id="single-send-form" class="composer stackForm">
             <label>
               <span>Subject</span>
@@ -181,29 +167,32 @@
             </label>
             <button class="primaryButton" id="single-submit" type="submit">Send email</button>
           </form>
-
-          <div class="previewBlock">
-            <div class="panelHead compactHead">
-              <div>
-                <p class="tag">Conversation Preview</p>
-                <h3>Recent exchange</h3>
-              </div>
-            </div>
-            <div id="single-thread-stream" class="chatStream compact"></div>
-          </div>
         </section>
 
-        <section id="bulk-view" class="conversationView" hidden>
-          <div class="threadHero">
+        <section id="page-bulk" class="pageView" hidden>
+          <div class="panelHead split">
             <div>
               <p class="tag">Bulk Send</p>
-              <h2>Campaign Batch</h2>
+              <h2>Audience Selection</h2>
               <p class="hint" id="bulk-selected-meta">0 recipients selected</p>
             </div>
           </div>
-
+          <div class="toolbar">
+            <input id="bulk-recipient-search" type="text" placeholder="Search recipients for a campaign" />
+            <select id="bulk-recipient-source">
+              <option value="all">All categories</option>
+              <option value="profile">Profile</option>
+              <option value="history">History</option>
+              <option value="inbox">Inbox</option>
+            </select>
+            <div class="toolbarActions">
+              <button id="bulk-select-shown" class="ghostButton" type="button">Select shown</button>
+              <button id="bulk-select-all" class="ghostButton" type="button">Select all</button>
+              <button id="bulk-clear-all" class="ghostButton" type="button">Clear</button>
+            </div>
+          </div>
+          <div id="bulk-recipient-list" class="recipientGrid"></div>
           <div id="bulk-selection-summary" class="selectionSummary"></div>
-
           <form id="bulk-send-form" class="composer stackForm">
             <label>
               <span>Subject</span>
@@ -225,6 +214,6 @@
   </main>
 
   <div id="toast" class="toast" hidden></div>
-  <script src="/assets/mail-ui.js?v=20260422c" defer></script>
+  <script src="/assets/mail-ui.js?v=20260422d" defer></script>
 </body>
 </html>

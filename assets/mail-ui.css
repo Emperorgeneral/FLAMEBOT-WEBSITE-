@@ -120,7 +120,7 @@ h3 {
 
 .workspace {
   display: grid;
-  grid-template-columns: 220px 340px minmax(0, 1fr);
+  grid-template-columns: 220px minmax(0, 1fr);
   gap: 18px;
   align-items: start;
 }
@@ -191,16 +191,16 @@ h3 {
   font-size: 24px;
 }
 
-.listPanel,
-.conversationPanel {
+.pagePanel {
   display: grid;
   gap: 14px;
   min-height: 74vh;
 }
 
-.listHead {
-  gap: 10px;
-  align-items: end;
+.pageView {
+  display: grid;
+  gap: 14px;
+  align-content: start;
 }
 
 .toolbar {
@@ -210,22 +210,27 @@ h3 {
   align-items: center;
 }
 
+.inboxToolbar {
+  grid-template-columns: 1fr auto;
+}
+
 .toolbarActions {
   display: flex;
   gap: 8px;
 }
 
-.listContent {
+.threadGrid,
+.recipientGrid {
   display: grid;
   gap: 10px;
   align-content: start;
-  max-height: calc(74vh - 140px);
+  max-height: calc(74vh - 190px);
   overflow: auto;
   padding-right: 4px;
 }
 
-.directoryItem,
-.threadItem {
+.threadCard,
+.recipientCard {
   width: 100%;
   border: 1px solid #dde6ed;
   border-radius: 16px;
@@ -238,32 +243,30 @@ h3 {
   color: var(--ink);
 }
 
-.directoryItem.active,
-.threadItem.active,
-.directoryItem:hover,
-.threadItem:hover {
+.recipientCard.active,
+.threadCard:hover,
+.recipientCard:hover {
   border-color: #a9c6d4;
   background: #f7fbfd;
 }
 
-.directoryItem strong,
-.threadItem strong {
+.recipientCard strong,
+.threadCard strong {
   font-size: 15px;
 }
 
-.directoryItem p,
-.threadItem p {
+.recipientCard p,
+.threadCard p {
   margin: 0;
   color: var(--subtle);
   font-size: 13px;
 }
 
-.directoryItem.selectable {
-  grid-template-columns: 1fr auto;
-  align-items: center;
+.recipientCard.checkable {
+  cursor: default;
 }
 
-.directoryCheck {
+.checkRow {
   display: flex;
   gap: 12px;
   align-items: start;
@@ -282,14 +285,14 @@ h3 {
   text-transform: capitalize;
 }
 
-.threadTop {
+.threadRow {
   display: flex;
   justify-content: space-between;
   gap: 10px;
   align-items: center;
 }
 
-.threadTop.secondary {
+.threadRow.sub {
   color: var(--subtle);
   font-size: 12px;
 }
@@ -309,10 +312,12 @@ h3 {
   line-height: 1.45;
 }
 
-.conversationView {
-  display: grid;
-  gap: 14px;
-  align-content: start;
+
+.threadTopBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
 }
 
 .threadHero {
@@ -322,6 +327,11 @@ h3 {
   align-items: end;
   padding-bottom: 12px;
   border-bottom: 1px solid #e8eef4;
+}
+
+.threadHero.compact {
+  border-bottom: 0;
+  padding-bottom: 0;
 }
 
 .chatStream {
@@ -388,15 +398,6 @@ h3 {
 .stackForm {
   display: grid;
   gap: 12px;
-}
-
-.previewBlock {
-  display: grid;
-  gap: 10px;
-}
-
-.compactHead {
-  margin-bottom: 0;
 }
 
 .selectionSummary {
@@ -497,7 +498,7 @@ select:focus {
 
 @media (max-width: 1180px) {
   .workspace {
-    grid-template-columns: 200px 300px minmax(0, 1fr);
+    grid-template-columns: 200px minmax(0, 1fr);
   }
 }
 
@@ -514,7 +515,8 @@ select:focus {
     grid-template-columns: 1fr;
   }
 
-  .listContent,
+  .threadGrid,
+  .recipientGrid,
   .chatStream,
   .chatStream.compact {
     max-height: none;

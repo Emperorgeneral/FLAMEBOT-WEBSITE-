@@ -3,18 +3,18 @@ const SEEN_THREADS_KEY = 'flamebot-mail-thread-seen';
 
 const state = {
   authenticated: false,
-  view: 'inbox',
+  page: 'inbox',
   recipients: [],
   threads: [],
   activeThread: null,
   activeThreadEmail: '',
   selectedRecipientEmail: '',
   selectedRecipients: new Set(),
+  inboxQuery: '',
   singleRecipientQuery: '',
   singleRecipientSource: 'all',
   bulkRecipientQuery: '',
   bulkRecipientSource: 'all',
-  threadQuery: '',
   seenThreads: loadSeenThreads(),
 };
 
@@ -35,25 +35,16 @@ const elements = {
   railRecipientCount: document.getElementById('rail-recipient-count'),
   railThreadCount: document.getElementById('rail-thread-count'),
 
-  listTag: document.getElementById('list-tag'),
-  listTitle: document.getElementById('list-title'),
-  listHint: document.getElementById('list-hint'),
-  listContent: document.getElementById('list-content'),
-  threadTools: document.getElementById('thread-tools'),
-  threadSearch: document.getElementById('thread-search'),
-  threadSearchBtn: document.getElementById('thread-search-btn'),
-  singleTools: document.getElementById('single-tools'),
-  singleRecipientSearch: document.getElementById('single-recipient-search'),
-  singleRecipientSource: document.getElementById('single-recipient-source'),
-  bulkTools: document.getElementById('bulk-tools'),
-  bulkRecipientSearch: document.getElementById('bulk-recipient-search'),
-  bulkRecipientSource: document.getElementById('bulk-recipient-source'),
-  bulkSelectAll: document.getElementById('bulk-select-all'),
-  bulkClearAll: document.getElementById('bulk-clear-all'),
+  pageInbox: document.getElementById('page-inbox'),
+  pageThread: document.getElementById('page-thread'),
+  pageSingle: document.getElementById('page-single'),
+  pageBulk: document.getElementById('page-bulk'),
 
-  inboxView: document.getElementById('inbox-view'),
-  threadEmpty: document.getElementById('thread-empty'),
-  threadShell: document.getElementById('thread-shell'),
+  inboxSearch: document.getElementById('inbox-search'),
+  inboxSearchBtn: document.getElementById('inbox-search-btn'),
+  inboxThreadList: document.getElementById('inbox-thread-list'),
+
+  threadBack: document.getElementById('thread-back'),
   threadTitle: document.getElementById('thread-title'),
   threadMeta: document.getElementById('thread-meta'),
   threadStream: document.getElementById('thread-stream'),
@@ -62,7 +53,9 @@ const elements = {
   threadReplyText: document.getElementById('thread-reply-text'),
   threadReplySubmit: document.getElementById('thread-reply-submit'),
 
-  singleView: document.getElementById('single-view'),
+  singleRecipientSearch: document.getElementById('single-recipient-search'),
+  singleRecipientSource: document.getElementById('single-recipient-source'),
+  singleRecipientList: document.getElementById('single-recipient-list'),
   singleSelectedTitle: document.getElementById('single-selected-title'),
   singleSelectedMeta: document.getElementById('single-selected-meta'),
   singleForm: document.getElementById('single-send-form'),
@@ -70,9 +63,13 @@ const elements = {
   singleText: document.getElementById('single-text'),
   singleReplyTo: document.getElementById('single-reply-to'),
   singleSubmit: document.getElementById('single-submit'),
-  singleThreadStream: document.getElementById('single-thread-stream'),
 
-  bulkView: document.getElementById('bulk-view'),
+  bulkRecipientSearch: document.getElementById('bulk-recipient-search'),
+  bulkRecipientSource: document.getElementById('bulk-recipient-source'),
+  bulkSelectShown: document.getElementById('bulk-select-shown'),
+  bulkSelectAll: document.getElementById('bulk-select-all'),
+  bulkClearAll: document.getElementById('bulk-clear-all'),
+  bulkRecipientList: document.getElementById('bulk-recipient-list'),
   bulkSelectedMeta: document.getElementById('bulk-selected-meta'),
   bulkSelectionSummary: document.getElementById('bulk-selection-summary'),
   bulkForm: document.getElementById('bulk-send-form'),
@@ -213,14 +210,39 @@ function recipientLabel(entry) {
 }
 
 function recipientMeta(entry) {
-  const email = String(entry.email || '').trim();
-  const source = String(entry.source || 'unknown');
-  return `${email} · ${source}`;
+  return `${String(entry.email || '')} · ${String(entry.source || 'unknown')}`;
 }
 
-function participantName(email) {
-  const match = state.recipients.find((entry) => String(entry.email).toLowerCase() === String(email).toLowerCase());
-  return match ? recipientLabel(match) : String(email || '');
+function stripHtml(value) {
+  return String(value || '')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function messageText(message) {
+  return String(message.body_text || '').trim() || stripHtml(message.body_html || '');
+}
+
+function hasUnread(thread) {
+  if (String(thread.last_message_direction) !== 'received') {
+    return false;
+  }
+  const seen = state.seenThreads[thread.participant_email];
+  const seenTime = seen ? new Date(seen).getTime() : 0;
+  const lastTime = thread.last_message_at ? new Date(thread.last_message_at).getTime() : 0;
+  return lastTime > seenTime;
+}
+
+function markThreadSeen(thread) {
+  const latestIncoming = [...(thread.messages || [])].reverse().find((message) => String(message.direction) === 'received');
+  if (!latestIncoming) {
+    return;
+  }
+  state.seenThreads[thread.participant_email] = latestIncoming.timestamp;
+  saveSeenThreads();
 }
 
 function filteredRecipients(mode) {
@@ -244,50 +266,7 @@ function filteredRecipients(mode) {
   });
 }
 
-function stripHtml(value) {
-  return String(value || '')
-    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
-    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function messageText(message) {
-  return String(message.body_text || '').trim() || stripHtml(message.body_html || '');
-}
-
-function threadPreview(thread) {
-  const preview = String(thread.last_message_preview || '').trim();
-  if (preview) {
-    return preview;
-  }
-  return String(thread.last_message_subject || '').trim() || 'No preview yet';
-}
-
-function emptyThread(email) {
-  const recipient = state.recipients.find((entry) => String(entry.email).toLowerCase() === String(email).toLowerCase());
-  return {
-    participant_email: email,
-    participant_name: recipient ? recipientLabel(recipient) : null,
-    participant_source: recipient?.source || 'unknown',
-    sent_count: 0,
-    received_count: 0,
-    messages: [],
-  };
-}
-
-function hasUnread(thread) {
-  if (String(thread.last_message_direction) !== 'received') {
-    return false;
-  }
-  const seen = state.seenThreads[thread.participant_email];
-  const seenTime = seen ? new Date(seen).getTime() : 0;
-  const lastTime = thread.last_message_at ? new Date(thread.last_message_at).getTime() : 0;
-  return lastTime > seenTime;
-}
-
-function updateRailStats() {
+function updateSidebarStats() {
   elements.railRecipientCount.textContent = String(state.recipients.length);
   elements.railThreadCount.textContent = String(state.threads.length);
   const unreadThreads = state.threads.filter(hasUnread).length;
@@ -295,142 +274,62 @@ function updateRailStats() {
   elements.navInboxBadge.textContent = String(unreadThreads);
 }
 
-function markThreadSeen(thread) {
-  const latestIncoming = [...(thread.messages || [])].reverse().find((message) => String(message.direction) === 'received');
-  if (!latestIncoming) {
-    return;
-  }
-  state.seenThreads[thread.participant_email] = latestIncoming.timestamp;
-  saveSeenThreads();
+function setPage(page) {
+  state.page = page;
+
+  elements.navInbox.classList.toggle('active', page === 'inbox' || page === 'thread');
+  elements.navSingle.classList.toggle('active', page === 'single');
+  elements.navBulk.classList.toggle('active', page === 'bulk');
+
+  elements.pageInbox.hidden = page !== 'inbox';
+  elements.pageThread.hidden = page !== 'thread';
+  elements.pageSingle.hidden = page !== 'single';
+  elements.pageBulk.hidden = page !== 'bulk';
 }
 
-function renderModeState() {
-  elements.navInbox.classList.toggle('active', state.view === 'inbox');
-  elements.navSingle.classList.toggle('active', state.view === 'single');
-  elements.navBulk.classList.toggle('active', state.view === 'bulk');
-
-  elements.threadTools.hidden = state.view !== 'inbox';
-  elements.singleTools.hidden = state.view !== 'single';
-  elements.bulkTools.hidden = state.view !== 'bulk';
-
-  elements.inboxView.hidden = state.view !== 'inbox';
-  elements.singleView.hidden = state.view !== 'single';
-  elements.bulkView.hidden = state.view !== 'bulk';
-}
-
-function renderListHeader() {
-  if (state.view === 'single') {
-    elements.listTag.textContent = 'Single send';
-    elements.listTitle.textContent = 'Recipient Directory';
-    elements.listHint.textContent = 'Pick one saved contact and compose from the same thread-aware workspace.';
-    return;
-  }
-  if (state.view === 'bulk') {
-    elements.listTag.textContent = 'Bulk send';
-    elements.listTitle.textContent = 'Audience Selector';
-    elements.listHint.textContent = 'Filter by category, select many, then send one consistent campaign.';
-    return;
-  }
-  elements.listTag.textContent = 'Inbox';
-  elements.listTitle.textContent = 'Conversation Threads';
-  elements.listHint.textContent = 'Every sender stays inside one continuous conversation with unread badges for new replies.';
-}
-
-function renderSingleRecipientList() {
-  const rows = filteredRecipients('single');
-  if (!rows.length) {
-    elements.listContent.innerHTML = '<div class="emptyState small"><h3>No recipients found</h3><p class="hint">Try a different name or category.</p></div>';
-    return;
-  }
-
-  elements.listContent.innerHTML = rows.map((row) => {
-    const active = String(row.email || '').toLowerCase() === String(state.selectedRecipientEmail || '').toLowerCase();
-    return `
-      <button type="button" class="directoryItem ${active ? 'active' : ''}" data-kind="single-recipient" data-email="${escapeHtml(row.email)}">
-        <div>
-          <strong>${escapeHtml(recipientLabel(row))}</strong>
-          <p>${escapeHtml(row.email || '')}</p>
-        </div>
-        <span class="sourceBadge">${escapeHtml(row.source || 'unknown')}</span>
-      </button>
-    `;
-  }).join('');
-}
-
-function renderBulkRecipientList() {
-  const rows = filteredRecipients('bulk');
-  if (!rows.length) {
-    elements.listContent.innerHTML = '<div class="emptyState small"><h3>No recipients found</h3><p class="hint">Adjust your search or category filter.</p></div>';
-    return;
-  }
-
-  elements.listContent.innerHTML = rows.map((row) => {
-    const checked = state.selectedRecipients.has(row.email) ? 'checked' : '';
-    return `
-      <label class="directoryItem selectable">
-        <div class="directoryCheck">
-          <input type="checkbox" data-kind="bulk-recipient" data-email="${escapeHtml(row.email)}" ${checked} />
-          <div>
-            <strong>${escapeHtml(recipientLabel(row))}</strong>
-            <p>${escapeHtml(row.email || '')}</p>
-          </div>
-        </div>
-        <span class="sourceBadge">${escapeHtml(row.source || 'unknown')}</span>
-      </label>
-    `;
-  }).join('');
-}
-
-function renderThreadList() {
+function renderInboxList() {
   if (!state.threads.length) {
-    elements.listContent.innerHTML = '<div class="emptyState small"><h3>No threads yet</h3><p class="hint">Incoming replies and sent mail will gather here as continuous conversations.</p></div>';
+    elements.inboxThreadList.innerHTML = '<div class="emptyState small"><h3>No senders yet</h3><p class="hint">When messages are sent or received, senders appear here.</p></div>';
     return;
   }
 
-  elements.listContent.innerHTML = state.threads.map((thread) => {
-    const active = String(thread.participant_email || '').toLowerCase() === String(state.activeThreadEmail || '').toLowerCase();
+  elements.inboxThreadList.innerHTML = state.threads.map((thread) => {
     const unread = hasUnread(thread);
     return `
-      <button type="button" class="threadItem ${active ? 'active' : ''}" data-kind="thread" data-email="${escapeHtml(thread.participant_email)}">
-        <div class="threadTop">
+      <button type="button" class="threadCard" data-email="${escapeHtml(thread.participant_email)}">
+        <div class="threadRow">
           <strong>${escapeHtml(thread.participant_name || thread.participant_email || '')}</strong>
           <span class="threadTime">${escapeHtml(formatShortDate(thread.last_message_at))}</span>
         </div>
-        <div class="threadTop secondary">
+        <div class="threadRow sub">
           <span>${escapeHtml(thread.participant_email || '')}</span>
           ${unread ? '<span class="unreadBadge">1</span>' : ''}
         </div>
         <p class="threadSubject">${escapeHtml(thread.last_message_subject || '(No subject)')}</p>
-        <p class="threadPreview">${escapeHtml(threadPreview(thread))}</p>
++        <p class="threadPreview">${escapeHtml(thread.last_message_preview || '')}</p>
       </button>
     `;
   }).join('');
 }
 
-function renderListPanel() {
-  renderListHeader();
-  updateRailStats();
-  if (state.view === 'single') {
-    renderSingleRecipientList();
-    return;
-  }
-  if (state.view === 'bulk') {
-    renderBulkRecipientList();
-    return;
-  }
-  renderThreadList();
-}
-
-function renderMessageStream(container, messages, emptyText) {
-  if (!Array.isArray(messages) || messages.length === 0) {
-    container.innerHTML = `<div class="emptyState small"><h3>Nothing here yet</h3><p class="hint">${escapeHtml(emptyText)}</p></div>`;
+function renderThreadMessages() {
+  const thread = state.activeThread;
+  if (!thread) {
+    elements.threadStream.innerHTML = '<div class="emptyState small"><h3>No conversation loaded</h3><p class="hint">Open a sender from inbox first.</p></div>';
     return;
   }
 
-  container.innerHTML = messages.map((message) => {
+  elements.threadTitle.textContent = thread.participant_name || thread.participant_email;
+  elements.threadMeta.textContent = `${thread.participant_email} · ${thread.received_count || 0} received · ${thread.sent_count || 0} sent`;
+
+  if (!Array.isArray(thread.messages) || thread.messages.length === 0) {
+    elements.threadStream.innerHTML = '<div class="emptyState small"><h3>No messages</h3><p class="hint">This thread has no history yet.</p></div>';
+    return;
+  }
+
+  elements.threadStream.innerHTML = thread.messages.map((message) => {
     const text = escapeHtml(messageText(message)).replaceAll('\n', '<br />');
     const subject = String(message.subject || '').trim();
-    const status = String(message.status || '').trim();
     return `
       <article class="chatBubble ${escapeHtml(message.direction || 'received')}">
         <div class="bubbleMeta">
@@ -439,150 +338,128 @@ function renderMessageStream(container, messages, emptyText) {
         </div>
         ${subject ? `<h3>${escapeHtml(subject)}</h3>` : ''}
         <div class="bubbleBody">${text || '<span class="hint">No text body.</span>'}</div>
-        ${status ? `<p class="bubbleStatus">${escapeHtml(status)}</p>` : ''}
       </article>
     `;
   }).join('');
-
-  container.scrollTop = container.scrollHeight;
+  elements.threadStream.scrollTop = elements.threadStream.scrollHeight;
 }
 
-function renderSingleView() {
-  const email = state.selectedRecipientEmail;
-  if (!email) {
-    elements.singleSelectedTitle.textContent = 'Choose a recipient';
-    elements.singleSelectedMeta.textContent = 'Search the directory, select one contact, then send directly inside that conversation.';
-    renderMessageStream(elements.singleThreadStream, [], 'No recipient selected yet.');
+function renderSingleRecipients() {
+  const rows = filteredRecipients('single');
+  if (!rows.length) {
+    elements.singleRecipientList.innerHTML = '<div class="emptyState small"><h3>No recipients found</h3><p class="hint">Try another name or category.</p></div>';
     return;
   }
 
-  const recipient = state.recipients.find((entry) => String(entry.email).toLowerCase() === String(email).toLowerCase());
-  elements.singleSelectedTitle.textContent = recipient ? recipientLabel(recipient) : email;
-  elements.singleSelectedMeta.textContent = recipient ? recipientMeta(recipient) : email;
-  renderMessageStream(
-    elements.singleThreadStream,
-    state.activeThread?.participant_email === email ? (state.activeThread.messages || []) : [],
-    'No previous conversation yet. Your new message will start this thread.'
-  );
+  elements.singleRecipientList.innerHTML = rows.map((row) => {
+    const active = String(row.email || '').toLowerCase() === String(state.selectedRecipientEmail || '').toLowerCase();
+    return `
+      <button type="button" class="recipientCard ${active ? 'active' : ''}" data-kind="single" data-email="${escapeHtml(row.email)}">
+        <strong>${escapeHtml(recipientLabel(row))}</strong>
+        <p>${escapeHtml(recipientMeta(row))}</p>
+      </button>
+    `;
+  }).join('');
+}
+
+function renderSingleSelectionMeta() {
+  if (!state.selectedRecipientEmail) {
+    elements.singleSelectedTitle.textContent = 'Choose a recipient';
+    elements.singleSelectedMeta.textContent = 'Recipient details show here.';
+    return;
+  }
+  const recipient = state.recipients.find((entry) => String(entry.email).toLowerCase() === String(state.selectedRecipientEmail).toLowerCase());
+  elements.singleSelectedTitle.textContent = recipient ? recipientLabel(recipient) : state.selectedRecipientEmail;
+  elements.singleSelectedMeta.textContent = recipient ? recipientMeta(recipient) : state.selectedRecipientEmail;
+}
+
+function renderBulkRecipients() {
+  const rows = filteredRecipients('bulk');
+  if (!rows.length) {
+    elements.bulkRecipientList.innerHTML = '<div class="emptyState small"><h3>No recipients found</h3><p class="hint">Try another filter.</p></div>';
+    return;
+  }
+
+  elements.bulkRecipientList.innerHTML = rows.map((row) => {
+    const checked = state.selectedRecipients.has(row.email) ? 'checked' : '';
+    return `
+      <label class="recipientCard checkable">
+        <div class="checkRow">
+          <input type="checkbox" data-kind="bulk" data-email="${escapeHtml(row.email)}" ${checked} />
+          <div>
+            <strong>${escapeHtml(recipientLabel(row))}</strong>
+            <p>${escapeHtml(recipientMeta(row))}</p>
+          </div>
+        </div>
+      </label>
+    `;
+  }).join('');
 }
 
 function renderBulkSelectionSummary() {
   const selected = Array.from(state.selectedRecipients);
   elements.bulkSelectedMeta.textContent = `${selected.length} recipients selected`;
   if (!selected.length) {
-    elements.bulkSelectionSummary.innerHTML = '<div class="emptyState small"><h3>No recipients selected</h3><p class="hint">Choose recipients from the middle column, by category or all at once.</p></div>';
+    elements.bulkSelectionSummary.innerHTML = '<div class="emptyState small"><h3>No recipients selected</h3><p class="hint">Use Select shown or Select all to build your audience quickly.</p></div>';
     return;
   }
+
   elements.bulkSelectionSummary.innerHTML = selected
-    .slice(0, 20)
-    .map((email) => `<span class="selectionPill">${escapeHtml(participantName(email))}</span>`)
+    .slice(0, 30)
+    .map((email) => `<span class="selectionPill">${escapeHtml(email)}</span>`)
     .join('');
 }
 
-function defaultReplySubject(thread) {
-  const latestSubject = [...(thread.messages || [])]
-    .reverse()
-    .map((message) => String(message.subject || '').trim())
-    .find(Boolean);
-  if (!latestSubject) {
-    return 'Re: Message';
-  }
-  return latestSubject.startsWith('Re:') ? latestSubject : `Re: ${latestSubject}`;
-}
-
-function renderInboxView() {
-  const thread = state.activeThread;
-  const showThread = state.view === 'inbox' && thread && thread.participant_email;
-  elements.threadEmpty.hidden = Boolean(showThread);
-  elements.threadShell.hidden = !showThread;
-  if (!showThread) {
-    return;
-  }
-
-  elements.threadTitle.textContent = thread.participant_name || thread.participant_email;
-  elements.threadMeta.textContent = `${thread.participant_email} · ${thread.participant_source || 'unknown'} · ${thread.received_count || 0} received · ${thread.sent_count || 0} sent`;
-  renderMessageStream(elements.threadStream, thread.messages || [], 'No messages in this thread yet.');
-  elements.threadReplySubject.value = defaultReplySubject(thread);
-}
-
-function renderConversationPanel() {
-  renderModeState();
-  renderInboxView();
-  renderSingleView();
+function renderAll() {
+  updateSidebarStats();
+  renderInboxList();
+  renderThreadMessages();
+  renderSingleRecipients();
+  renderSingleSelectionMeta();
+  renderBulkRecipients();
   renderBulkSelectionSummary();
-}
-
-function setView(view) {
-  state.view = ['single', 'bulk', 'inbox'].includes(view) ? view : 'inbox';
-  renderListPanel();
-  renderConversationPanel();
 }
 
 async function loadRecipients() {
   if (!state.authenticated) {
     return;
   }
-  const payload = await request('/emails/recipients?page=1&page_size=250');
+  const payload = await request('/emails/recipients?page=1&page_size=500');
   state.recipients = Array.isArray(payload.items) ? payload.items : [];
-  renderListPanel();
-  renderConversationPanel();
 }
 
 async function loadThreads() {
   if (!state.authenticated) {
     return;
   }
-  const q = encodeURIComponent(state.threadQuery || '');
+  const q = encodeURIComponent(state.inboxQuery || '');
   const payload = await request(`/threads?q=${q}`);
   state.threads = Array.isArray(payload.items) ? payload.items : [];
-  if (state.activeThreadEmail && !state.threads.some((thread) => String(thread.participant_email).toLowerCase() === String(state.activeThreadEmail).toLowerCase())) {
-    state.activeThreadEmail = '';
-    state.activeThread = null;
-  }
-  renderListPanel();
-  renderConversationPanel();
 }
 
-async function loadThread(email, options = {}) {
+async function openThread(email) {
   const participant = String(email || '').trim();
   if (!participant) {
-    state.activeThreadEmail = '';
-    state.activeThread = null;
-    renderListPanel();
-    renderConversationPanel();
     return;
   }
-
-  try {
-    const payload = await request(`/threads/${encodeURIComponent(participant)}`);
-    state.activeThreadEmail = participant;
-    state.activeThread = payload;
-    if (options.markSeen !== false) {
-      markThreadSeen(payload);
-    }
-  } catch (error) {
-    if (/404/.test(String(error.message || ''))) {
-      state.activeThreadEmail = participant;
-      state.activeThread = emptyThread(participant);
-    } else {
-      throw error;
-    }
-  }
-
-  renderListPanel();
-  renderConversationPanel();
+  const payload = await request(`/threads/${encodeURIComponent(participant)}`);
+  state.activeThreadEmail = participant;
+  state.activeThread = payload;
+  markThreadSeen(payload);
+  renderAll();
+  setPage('thread');
 }
 
 async function refreshWorkspace() {
   try {
     await Promise.all([loadRecipients(), loadThreads()]);
-    const targetEmail = state.view === 'single' ? state.selectedRecipientEmail : state.activeThreadEmail;
-    if (targetEmail) {
-      await loadThread(targetEmail, { markSeen: state.view === 'inbox' });
+    if (state.activeThreadEmail) {
+      await openThread(state.activeThreadEmail);
     }
+    renderAll();
     showToast('Workspace refreshed.');
   } catch (error) {
-    showToast(error.message || 'Unable to refresh mail workspace', 'error');
+    showToast(error.message || 'Unable to refresh workspace', 'error');
   }
 }
 
@@ -601,10 +478,8 @@ async function handleLogin(event) {
     elements.loginPassword.value = '';
     renderAuthState();
     await Promise.all([loadRecipients(), loadThreads()]);
-    if (state.threads.length) {
-      await loadThread(state.threads[0].participant_email);
-    }
-    setView('inbox');
+    renderAll();
+    setPage('inbox');
     showToast('Signed in successfully.');
   } catch (error) {
     showToast(error.message || 'Sign in failed', 'error');
@@ -617,7 +492,7 @@ async function handleLogout() {
   try {
     await request('/auth/logout', { method: 'POST', body: {} });
   } catch (_error) {
-    // Ignore; local state reset still matters.
+    // Ignore, we still clear local state.
   }
   state.authenticated = false;
   state.activeThread = null;
@@ -626,13 +501,39 @@ async function handleLogout() {
   showToast('Logged out.');
 }
 
+async function handleThreadReply(event) {
+  event.preventDefault();
+  if (!state.activeThreadEmail) {
+    return;
+  }
+  setBusy(elements.threadReplySubmit, true, 'Send reply', 'Sending...');
+  try {
+    const payload = {
+      to: state.activeThreadEmail,
+      subject: String(elements.threadReplySubject.value || '').trim(),
+      text: String(elements.threadReplyText.value || '').trim(),
+    };
+    const result = await request('/emails/send', { method: 'POST', body: payload });
+    if (String(result.status || '').toLowerCase() !== 'sent') {
+      throw new Error(`Reply status: ${result.status || 'unknown'}`);
+    }
+    elements.threadReplyText.value = '';
+    await Promise.all([loadRecipients(), loadThreads()]);
+    await openThread(state.activeThreadEmail);
+    showToast('Reply sent successfully.');
+  } catch (error) {
+    showToast(error.message || 'Reply send failed', 'error');
+  } finally {
+    setBusy(elements.threadReplySubmit, false, 'Send reply', 'Sending...');
+  }
+}
+
 async function handleSingleSend(event) {
   event.preventDefault();
   if (!state.selectedRecipientEmail) {
-    showToast('Select a recipient first.', 'error');
+    showToast('Select one recipient first.', 'error');
     return;
   }
-
   setBusy(elements.singleSubmit, true, 'Send email', 'Sending...');
   try {
     const payload = {
@@ -647,8 +548,8 @@ async function handleSingleSend(event) {
     }
     elements.singleSubject.value = '';
     elements.singleText.value = '';
-    await loadThreads();
-    await loadThread(state.selectedRecipientEmail, { markSeen: false });
+    await Promise.all([loadRecipients(), loadThreads()]);
+    renderAll();
     showToast('Email sent successfully.');
   } catch (error) {
     showToast(error.message || 'Unable to send email', 'error');
@@ -664,8 +565,7 @@ async function handleBulkSend(event) {
     showToast('Select at least one recipient.', 'error');
     return;
   }
-
-  setBusy(elements.bulkSubmit, true, 'Send batch', 'Sending batch...');
+  setBusy(elements.bulkSubmit, true, 'Send batch', 'Sending...');
   try {
     const payload = {
       recipients,
@@ -676,67 +576,36 @@ async function handleBulkSend(event) {
     const result = await request('/emails/send-bulk', { method: 'POST', body: payload });
     elements.bulkSubject.value = '';
     elements.bulkText.value = '';
-    await loadThreads();
+    await Promise.all([loadRecipients(), loadThreads()]);
+    renderAll();
     showToast(`Batch complete: ${result.sent || 0} sent, ${result.failed || 0} failed.`);
   } catch (error) {
     showToast(error.message || 'Unable to send batch', 'error');
   } finally {
-    setBusy(elements.bulkSubmit, false, 'Send batch', 'Sending batch...');
+    setBusy(elements.bulkSubmit, false, 'Send batch', 'Sending...');
   }
 }
 
-async function handleThreadReply(event) {
-  event.preventDefault();
-  if (!state.activeThreadEmail) {
+function handleInboxClick(event) {
+  const button = event.target.closest('button[data-email]');
+  if (!button) {
     return;
   }
-
-  setBusy(elements.threadReplySubmit, true, 'Send reply', 'Sending...');
-  try {
-    const payload = {
-      to: state.activeThreadEmail,
-      subject: String(elements.threadReplySubject.value || '').trim(),
-      text: String(elements.threadReplyText.value || '').trim(),
-      metadata: {
-        source: 'mail_console_chat_reply',
-      },
-    };
-    const result = await request('/emails/send', { method: 'POST', body: payload });
-    if (String(result.status || '').toLowerCase() !== 'sent') {
-      throw new Error(`Reply status: ${result.status || 'unknown'}`);
-    }
-    elements.threadReplyText.value = '';
-    await loadThreads();
-    await loadThread(state.activeThreadEmail);
-    showToast('Reply sent successfully.');
-  } catch (error) {
-    showToast(error.message || 'Reply send failed', 'error');
-  } finally {
-    setBusy(elements.threadReplySubmit, false, 'Send reply', 'Sending...');
-  }
+  openThread(String(button.dataset.email || '')).catch((error) => showToast(error.message || 'Unable to open thread', 'error'));
 }
 
-function handleListClick(event) {
-  const threadTarget = event.target.closest('[data-kind="thread"][data-email]');
-  if (threadTarget) {
-    const email = String(threadTarget.dataset.email || '');
-    setView('inbox');
-    loadThread(email).catch((error) => showToast(error.message || 'Unable to open thread', 'error'));
+function handleSingleRecipientClick(event) {
+  const button = event.target.closest('button[data-kind="single"][data-email]');
+  if (!button) {
     return;
   }
-
-  const singleTarget = event.target.closest('[data-kind="single-recipient"][data-email]');
-  if (singleTarget) {
-    const email = String(singleTarget.dataset.email || '');
-    state.selectedRecipientEmail = email;
-    setView('single');
-    loadThread(email, { markSeen: false }).catch((error) => showToast(error.message || 'Unable to load recipient thread', 'error'));
-  }
+  state.selectedRecipientEmail = String(button.dataset.email || '');
+  renderAll();
 }
 
 function handleBulkRecipientToggle(event) {
   const target = event.target;
-  if (!(target instanceof HTMLInputElement) || target.dataset.kind !== 'bulk-recipient') {
+  if (!(target instanceof HTMLInputElement) || target.dataset.kind !== 'bulk') {
     return;
   }
   const email = String(target.dataset.email || '').trim();
@@ -748,8 +617,7 @@ function handleBulkRecipientToggle(event) {
   } else {
     state.selectedRecipients.delete(email);
   }
-  renderListPanel();
-  renderConversationPanel();
+  renderAll();
 }
 
 function boot() {
@@ -759,59 +627,68 @@ function boot() {
   elements.logoutButton.addEventListener('click', handleLogout);
   elements.refreshButton.addEventListener('click', refreshWorkspace);
 
-  elements.navInbox.addEventListener('click', () => setView('inbox'));
-  elements.navSingle.addEventListener('click', () => setView('single'));
-  elements.navBulk.addEventListener('click', () => setView('bulk'));
+  elements.navInbox.addEventListener('click', () => setPage('inbox'));
+  elements.navSingle.addEventListener('click', () => setPage('single'));
+  elements.navBulk.addEventListener('click', () => setPage('bulk'));
+
+  elements.inboxSearchBtn.addEventListener('click', () => {
+    state.inboxQuery = String(elements.inboxSearch.value || '').trim();
+    loadThreads().then(renderAll).catch((error) => showToast(error.message || 'Search failed', 'error'));
+  });
+  elements.inboxSearch.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      state.inboxQuery = String(elements.inboxSearch.value || '').trim();
+      loadThreads().then(renderAll).catch((error) => showToast(error.message || 'Search failed', 'error'));
+    }
+  });
+
+  elements.threadBack.addEventListener('click', () => setPage('inbox'));
+  elements.threadReplyForm.addEventListener('submit', handleThreadReply);
 
   elements.singleRecipientSearch.addEventListener('input', (event) => {
     state.singleRecipientQuery = String(event.target.value || '');
-    renderListPanel();
+    renderAll();
   });
   elements.singleRecipientSource.addEventListener('change', (event) => {
     state.singleRecipientSource = String(event.target.value || 'all');
-    renderListPanel();
+    renderAll();
   });
+  elements.singleForm.addEventListener('submit', handleSingleSend);
 
   elements.bulkRecipientSearch.addEventListener('input', (event) => {
     state.bulkRecipientQuery = String(event.target.value || '');
-    renderListPanel();
+    renderAll();
   });
   elements.bulkRecipientSource.addEventListener('change', (event) => {
     state.bulkRecipientSource = String(event.target.value || 'all');
-    renderListPanel();
+    renderAll();
   });
-  elements.bulkSelectAll.addEventListener('click', () => {
+  elements.bulkSelectShown.addEventListener('click', () => {
     filteredRecipients('bulk').forEach((row) => {
       if (row.email) {
         state.selectedRecipients.add(row.email);
       }
     });
-    renderListPanel();
-    renderConversationPanel();
+    renderAll();
+  });
+  elements.bulkSelectAll.addEventListener('click', () => {
+    state.recipients.forEach((row) => {
+      if (row.email) {
+        state.selectedRecipients.add(row.email);
+      }
+    });
+    renderAll();
   });
   elements.bulkClearAll.addEventListener('click', () => {
     state.selectedRecipients.clear();
-    renderListPanel();
-    renderConversationPanel();
+    renderAll();
   });
-
-  elements.threadSearchBtn.addEventListener('click', () => {
-    state.threadQuery = String(elements.threadSearch.value || '').trim();
-    loadThreads().catch((error) => showToast(error.message || 'Unable to search threads', 'error'));
-  });
-  elements.threadSearch.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      state.threadQuery = String(elements.threadSearch.value || '').trim();
-      loadThreads().catch((error) => showToast(error.message || 'Unable to search threads', 'error'));
-    }
-  });
-
-  elements.listContent.addEventListener('click', handleListClick);
-  elements.listContent.addEventListener('change', handleBulkRecipientToggle);
-  elements.singleForm.addEventListener('submit', handleSingleSend);
   elements.bulkForm.addEventListener('submit', handleBulkSend);
-  elements.threadReplyForm.addEventListener('submit', handleThreadReply);
+
+  elements.inboxThreadList.addEventListener('click', handleInboxClick);
+  elements.singleRecipientList.addEventListener('click', handleSingleRecipientClick);
+  elements.bulkRecipientList.addEventListener('change', handleBulkRecipientToggle);
 
   checkSession()
     .then(async (authed) => {
@@ -819,12 +696,8 @@ function boot() {
         return;
       }
       await Promise.all([loadRecipients(), loadThreads()]);
-      setView('inbox');
-      if (state.threads.length) {
-        await loadThread(state.threads[0].participant_email);
-      } else {
-        renderConversationPanel();
-      }
+      renderAll();
+      setPage('inbox');
     })
     .catch(() => {
       state.authenticated = false;
