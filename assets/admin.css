@@ -369,8 +369,33 @@ button {
     grid-template-columns: 1fr;
   }
 
+  .statsGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   table {
     min-width: 760px;
+  }
+}
+
+@media (max-width: 1500px) {
+  .workspaceLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: static;
+  }
+
+  .sideNav {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+
+  .workspaceHeader,
+  .panelHeader,
+  .stackHeader {
+    gap: 10px;
+    flex-wrap: wrap;
   }
 }
 
@@ -562,6 +587,10 @@ tbody tr:hover {
 }
 
 @media (max-width: 860px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .workspaceHeader,
   .panelHeader,
   .actionsRow,
@@ -582,6 +611,10 @@ tbody tr:hover {
 }
 
 @media (max-width: 600px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+
   .shell {
     padding: 16px 12px 28px;
   }
