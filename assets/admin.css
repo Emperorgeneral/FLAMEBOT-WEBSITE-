@@ -34,10 +34,12 @@ body {
     radial-gradient(640px 360px at 85% 12%, rgba(111, 210, 255, 0.2), transparent 62%),
     linear-gradient(180deg, #051019 0%, #08141e 50%, #091722 100%);
   overflow-x: hidden;
+  overflow-y: auto;
 }
 
 html {
   overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .aurora {
@@ -57,7 +59,7 @@ html {
 }
 
 .authShell {
-  min-height: 100vh;
+  min-height: 100dvh;
   display: grid;
   place-content: center;
   gap: 22px;
@@ -637,5 +639,12 @@ tbody tr:hover {
     right: 12px;
     bottom: 12px;
     max-width: none;
+  }
+}
+
+@media (max-height: 820px) {
+  .authShell {
+    place-content: start center;
+    padding-top: 22px;
   }
 }
