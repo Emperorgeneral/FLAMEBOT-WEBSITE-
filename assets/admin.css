@@ -360,6 +360,20 @@ button {
   grid-template-columns: 340px 1fr;
 }
 
+@media (max-width: 1360px) {
+  .workspaceLayout {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+
+  .splitGridWide {
+    grid-template-columns: 1fr;
+  }
+
+  table {
+    min-width: 760px;
+  }
+}
+
 .subStats {
   display: grid;
   gap: 8px;
